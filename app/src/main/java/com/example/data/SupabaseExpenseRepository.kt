@@ -38,7 +38,11 @@ class SupabaseExpenseRepository {
         amount: Double,
         category: String,
         purpose: String,
-        expenseDate: String
+        expenseDate: String,
+        supplierPin: String,
+        invoiceNumber: String,
+        invoiceDate: String,
+        vatAmount: Double
     ): CreatedExpense = withContext(Dispatchers.IO) {
         requireConfigured()
         require(accessToken.isNotBlank() && userId.isNotBlank()) { "Your session expired. Sign in again." }
@@ -66,12 +70,15 @@ class SupabaseExpenseRepository {
             .put("employee_id", employeeId)
             .put("client_submission_id", clientId)
             .put("merchant_name", merchant.trim())
+            .put("supplier_pin", supplierPin.trim().ifBlank { JSONObject.NULL })
+            .put("cu_invoice_number", invoiceNumber.trim().ifBlank { JSONObject.NULL })
             .put("category", categoryKey)
             .put("purpose", purpose.trim())
             .put("gross_amount", amount)
-            .put("vat_amount", 0)
+            .put("vat_amount", vatAmount)
             .put("currency", "KES")
             .put("expense_date", expenseDate)
+            .put("invoice_date", invoiceDate.trim().ifBlank { JSONObject.NULL })
             .put("status", "submitted")
             .put("verification_status", "awaiting_verification")
             .put("submitted_by", userId)
