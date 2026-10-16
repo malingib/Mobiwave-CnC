@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
                         else -> MainContainer(
                             viewModel = viewModel,
                             signedInEmail = session?.email,
+                            accessToken = session?.accessToken,
                             onSignOut = {
                                 scope.launch {
                                     auth.signOut()
