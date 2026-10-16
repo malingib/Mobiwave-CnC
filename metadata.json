@@ -1,0 +1,6 @@
+{
+  "name": "MobiWave",
+  "description": "Enterprise Expense Management, Cash Advances & eTIMS Tax Compliance Hub for Tumaini Retail Network.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
