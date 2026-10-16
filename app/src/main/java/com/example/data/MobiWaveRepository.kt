@@ -61,7 +61,7 @@ class MobiWaveRepository {
         amount: Double,
         category: String,
         justification: String,
-        cuInvoice: String = "UNVERIFIED-CU-REFERENCE",
+        cuInvoice: String = "",
         supplierPin: String = "",
         isOfflineMode: Boolean = false,
         recordId: String? = null,
