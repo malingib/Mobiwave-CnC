@@ -46,6 +46,9 @@ class MainActivity : ComponentActivity() {
                     session = auth.restoreSession()
                     checkingSession = false
                 }
+                LaunchedEffect(session?.accessToken, session?.userId) {
+                    viewModel.setAuthenticatedSession(session?.accessToken, session?.userId)
+                }
 
                 Surface(modifier = Modifier.fillMaxSize()) {
                     when {
