@@ -1,5 +1,7 @@
 package com.example.ui
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.MobiWaveRepository
@@ -36,12 +38,14 @@ class MobiWaveViewModel(
     private val liveExpenseRepository = SupabaseExpenseRepository()
     private var authenticatedAccessToken: String? = null
     private var authenticatedUserId: String? = null
+    private var authenticatedContentResolver: ContentResolver? = null
     private val _isSubmittingExpense = MutableStateFlow(false)
     val isSubmittingExpense: StateFlow<Boolean> = _isSubmittingExpense.asStateFlow()
 
-    fun setAuthenticatedSession(accessToken: String?, userId: String?) {
+    fun setAuthenticatedSession(accessToken: String?, userId: String?, contentResolver: ContentResolver? = null) {
         authenticatedAccessToken = accessToken
         authenticatedUserId = userId
+        authenticatedContentResolver = contentResolver
     }
 
     // Active View Mode (true = Desktop/Web Controllership Dashboard, false = Mobile Stack)
@@ -177,7 +181,8 @@ class MobiWaveViewModel(
         amount: Double,
         category: String,
         justification: String,
-        isOffline: Boolean
+        isOffline: Boolean,
+        receiptUri: Uri? = null
     ) {
         if (_isSubmittingExpense.value) return
         if (isOffline) {
@@ -207,7 +212,16 @@ class MobiWaveViewModel(
                     justification = justification, isOfflineMode = false, recordId = created.id,
                     displayDate = created.expenseDate, vatAmountOverride = 0.0, demoReceiptImage = false
                 )
-                postNotification("Expense saved to the server. Receipt attachment and eTIMS verification are still pending.")
+                val receiptMessage = if (receiptUri != null) {
+                    try {
+                        val resolver = authenticatedContentResolver ?: throw IllegalStateException("Receipt upload is unavailable on this device.")
+                        liveExpenseRepository.uploadEvidence(resolver, token, userId, created, receiptUri)
+                        " Receipt evidence uploaded."
+                    } catch (uploadError: Exception) {
+                        " Receipt upload failed: ${uploadError.message ?: "please retry from the expense record"}."
+                    }
+                } else " Attach a receipt to complete the evidence record."
+                postNotification("Expense saved to the server.$receiptMessage eTIMS verification is still pending.")
                 _currentTab.value = MainTab.EXPENSES
             } catch (e: Exception) {
                 postNotification(e.message ?: "Expense submission failed. No local success was recorded.", isError = true)
