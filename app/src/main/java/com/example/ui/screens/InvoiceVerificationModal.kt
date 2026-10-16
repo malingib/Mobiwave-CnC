@@ -39,6 +39,8 @@ fun InvoiceVerificationModal(
     var check4 by remember { mutableStateOf(true) }
     var auditNote by remember { mutableStateOf("Generator run confirmed against Branch Security Log for black-out period 13-MAY...") }
     val scrollState = rememberScrollState()
+    val selectedInvoice by viewModel.selectedInvoice.collectAsState()
+    val isRequestingVerification by viewModel.isRequestingInvoiceVerification.collectAsState()
 
     Dialog(
         onDismissRequest = { viewModel.closeInvoiceDetailModal() },
@@ -66,7 +68,7 @@ fun InvoiceVerificationModal(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "VOUCHER #EXP-2025-0514-089",
+                            text = "EXPENSE ${selectedInvoice?.id ?: "not selected"}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -372,7 +374,7 @@ fun InvoiceVerificationModal(
                             OutlinedButton(
                                 onClick = {
                                     viewModel.closeInvoiceDetailModal()
-                                    viewModel.postNotification("Voucher rejected and returned to branch.", isError = true)
+                                    viewModel.postNotification("Rejection is not connected to the live expense-review workflow. No change was saved.", isError = true)
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MobiError)
@@ -385,7 +387,7 @@ fun InvoiceVerificationModal(
                             OutlinedButton(
                                 onClick = {
                                     viewModel.closeInvoiceDetailModal()
-                                    viewModel.postNotification("Query flagged to branch manager.")
+                                    viewModel.postNotification("No query was saved. Use the authorised manual-review queue for invoice exceptions.", isError = true)
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             ) {
@@ -394,16 +396,18 @@ fun InvoiceVerificationModal(
                         }
 
                         Button(
-                            onClick = {
-                                viewModel.closeInvoiceDetailModal()
-                                viewModel.postNotification("Voucher #EXP-2025-0514-089 accepted and certified for KRA tax filing!")
-                            },
+                            onClick = { viewModel.requestInvoiceVerification() },
+                            enabled = !isRequestingVerification,
                             colors = ButtonDefaults.buttonColors(containerColor = MobiTeal),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Verified, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            if (isRequestingVerification) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                            } else {
+                                Icon(imageVector = Icons.Default.FactCheck, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Accept & Certify for KRA Tax Filing", fontWeight = FontWeight.Bold)
+                            Text(text = if (isRequestingVerification) "Requesting..." else "Request verification / review", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
