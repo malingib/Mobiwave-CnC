@@ -1,87 +1,6 @@
 -- Complete the server-side finance review, cash-return and reconciliation foundation.
-create unique index if not exists fund_transactions_review_return_ref_unique
-  on public.fund_transactions (organisation_id, transaction_type, external_reference)
-  where transaction_type in ('expense_accepted', 'cash_returned') and external_reference is not null;
-
 create unique index if not exists reconciliations_employee_period_unique
   on public.reconciliations (organisation_id, employee_id, period_start, period_end);
-
-create or replace function public.review_expense(
-  p_expense_id uuid,
-  p_decision text,
-  p_reason text
-) returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $function$
-declare
-  e public.expenses%rowtype;
-  decision_status text;
-begin
-  if auth.uid() is null or not public.has_permission('expenses.review') then
-    raise exception 'permission denied' using errcode = '42501';
-  end if;
-  if p_expense_id is null or p_decision is null or p_decision not in ('accepted', 'rejected', 'needs_review')
-     or p_reason is null or length(trim(p_reason)) < 5 then
-    raise exception 'valid decision and reason required' using errcode = '22023';
-  end if;
-
-  select * into e
-  from public.expenses
-  where id = p_expense_id
-    and organisation_id = public.current_organisation_id()
-  for update;
-
-  if not found then raise exception 'expense not found' using errcode = 'P0002'; end if;
-  if e.submitted_by = auth.uid() then
-    raise exception 'submitter cannot review own expense' using errcode = '42501';
-  end if;
-  if e.status not in ('submitted', 'needs_review') then
-    raise exception 'expense is not awaiting review' using errcode = '22023';
-  end if;
-
-  decision_status := p_decision;
-  update public.expenses
-  set status = decision_status,
-      reviewed_by = auth.uid(),
-      reviewed_at = now(),
-      review_note = trim(p_reason),
-      updated_at = now()
-  where id = e.id;
-
-  if decision_status = 'accepted' then
-    insert into public.fund_transactions (
-      organisation_id, employee_id, transaction_type, amount, currency,
-      external_reference, effective_at, created_by, metadata
-    ) values (
-      e.organisation_id, e.employee_id, 'expense_accepted', e.gross_amount, e.currency,
-      'expense-accepted:' || e.id::text, now(), auth.uid(),
-      jsonb_build_object('expense_id', e.id, 'review_reason', trim(p_reason))
-    )
-    on conflict do nothing;
-  end if;
-
-  insert into public.audit_events (
-    organisation_id, actor_user_id, action, entity_type, entity_id, reason, after_data
-  ) values (
-    e.organisation_id, auth.uid(), 'expense.reviewed', 'expense', e.id::text,
-    trim(p_reason),
-    jsonb_build_object(
-      'decision', decision_status,
-      'verification_status', e.verification_status,
-      'externally_verified', e.verification_status = 'externally_verified'
-    )
-  );
-
-  return jsonb_build_object(
-    'expense_id', e.id,
-    'decision', decision_status,
-    'externally_verified', e.verification_status = 'externally_verified',
-    'reviewed_at', now()
-  );
-end
-$function$;
 
 create or replace function public.record_cash_return(
   p_employee_id uuid,
@@ -251,9 +170,7 @@ begin
 end
 $function$;
 
-revoke all on function public.review_expense(uuid, text, text) from public, anon;
 revoke all on function public.record_cash_return(uuid, numeric, text, text, timestamptz) from public, anon;
 revoke all on function public.rebuild_reconciliation(uuid, date, date) from public, anon;
-grant execute on function public.review_expense(uuid, text, text) to authenticated;
 grant execute on function public.record_cash_return(uuid, numeric, text, text, timestamptz) to authenticated;
 grant execute on function public.rebuild_reconciliation(uuid, date, date) to authenticated;
