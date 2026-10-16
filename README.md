@@ -76,7 +76,7 @@ Function deployment does not enable live payments by itself. Configure sandbox f
 
 ## Android build
 
-Use JDK 17 and Gradle 9.1.1 (the current repository does not include the gradlew wrapper script):
+Use JDK 17 and Gradle 9.3.1 (the current repository does not include the gradlew wrapper script):
 
     gradle testDebugUnitTest assembleDebug
 
