@@ -103,6 +103,8 @@ class MobiWaveViewModel(
 
     private val _selectedInvoice = MutableStateFlow<ExpenseVoucher?>(null)
     val selectedInvoice: StateFlow<ExpenseVoucher?> = _selectedInvoice.asStateFlow()
+    private val _isRequestingInvoiceVerification = MutableStateFlow(false)
+    val isRequestingInvoiceVerification: StateFlow<Boolean> = _isRequestingInvoiceVerification.asStateFlow()
 
     private val _showStkPushModal = MutableStateFlow(false)
     val showStkPushModal: StateFlow<Boolean> = _showStkPushModal.asStateFlow()
@@ -155,6 +157,32 @@ class MobiWaveViewModel(
 
     fun closeInvoiceDetailModal() {
         _showInvoiceDetailModal.value = false
+    }
+
+    fun requestInvoiceVerification() {
+        if (_isRequestingInvoiceVerification.value) return
+        val token = authenticatedAccessToken
+        val selected = _selectedInvoice.value
+        if (token.isNullOrBlank()) {
+            postNotification("Sign in again before requesting invoice verification.", isError = true)
+            return
+        }
+        if (selected == null) {
+            postNotification("Select a saved expense before requesting verification.", isError = true)
+            return
+        }
+        _isRequestingInvoiceVerification.value = true
+        viewModelScope.launch {
+            try {
+                val result = liveExpenseRepository.requestInvoiceVerification(token, selected.id)
+                closeInvoiceDetailModal()
+                postNotification(result)
+            } catch (e: Exception) {
+                postNotification(e.message ?: "Invoice verification request failed. No verification was claimed.", isError = true)
+            } finally {
+                _isRequestingInvoiceVerification.value = false
+            }
+        }
     }
 
     fun openStkPushModal() {
