@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -18,6 +20,7 @@ import com.example.ui.components.ToastNotification
 fun MainContainer(
     viewModel: MobiWaveViewModel,
     signedInEmail: String? = null,
+    accessToken: String? = null,
     onSignOut: () -> Unit = {}
 ) {
     val configuration = LocalConfiguration.current
@@ -28,6 +31,7 @@ fun MainContainer(
     val showInvoiceDetailModal by viewModel.showInvoiceDetailModal.collectAsState()
     val showStkPushModal by viewModel.showStkPushModal.collectAsState()
     val notification by viewModel.notification.collectAsState()
+    var showManualReviewQueue by remember { mutableStateOf(false) }
 
     // Render Web Dashboard when in expanded width or when explicitly toggled
     val displayWeb = isWebDashboardMode || isTabletWidth
@@ -66,11 +70,20 @@ fun MainContainer(
                     )
                 }
             ) { paddingValues ->
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Prototype screens - no live expense sync", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
+                        TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                    }
+                    Box(modifier = Modifier.fillMaxSize()) {
                     when (currentTab) {
                         MainTab.HOME -> HomeScreen(
                             viewModel = viewModel,
@@ -94,8 +107,16 @@ fun MainContainer(
                             viewModel = viewModel
                         )
                     }
+                    }
                 }
             }
+        }
+
+        if (showManualReviewQueue) {
+            ManualReviewQueueScreen(
+                accessToken = accessToken.orEmpty(),
+                onClose = { showManualReviewQueue = false }
+            )
         }
 
         // Modals (Available across all screen types)
