@@ -16,7 +16,9 @@ import com.example.ui.components.ToastNotification
 
 @Composable
 fun MainContainer(
-    viewModel: MobiWaveViewModel
+    viewModel: MobiWaveViewModel,
+    signedInEmail: String? = null,
+    onSignOut: () -> Unit = {}
 ) {
     val configuration = LocalConfiguration.current
     val isTabletWidth = configuration.screenWidthDp >= 700
@@ -44,11 +46,9 @@ fun MainContainer(
                             MainTab.ADVANCES -> "My Advances"
                             MainTab.APPROVALS -> "Approvals"
                         },
-                        subtitle = "Tumaini Retail Shop #042 - Nairobi East Region",
+                        subtitle = signedInEmail ?: "Authenticated organisation session",
                         avatarUrl = viewModel.avatarUrl,
-                        onAvatarClick = {
-                            viewModel.postNotification("Logged in as David Kiprop (#EMP-2041) • Online & Synced")
-                        },
+                        onAvatarClick = onSignOut,
                         onBackClick = if (currentTab != MainTab.HOME) {
                             { viewModel.switchTab(MainTab.HOME) }
                         } else null,
