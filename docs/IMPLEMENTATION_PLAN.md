@@ -1,39 +1,44 @@
 # Implementation status and release plan
 
-## Changes in this foundation branch
+## Implemented in the production-completion branch
 
-- [x] Create a versioned multi-tenant schema for organisations, org units, employees, roles, assignments, acting appointments, reporting relationships, allocations, expenses, evidence, verification, reconciliation, disbursements and audit events.
-- [x] Add baseline RLS policies and permission checks; maker/checker RPCs reject same-user approval/submission.
-- [x] Add server-side invoice verification adapter that never treats QR/OCR as verification and fails closed when no authorised provider is configured.
-- [x] Add server-side Daraja B2C submission and callback reconciliation foundation; no client-side action claims to send money.
-- [x] Add CI workflow and security/integration documentation.
-- [x] Fix the local prototype's misleading success states for eTIMS and B2C.
-- [ ] Apply and validate migration in a dedicated staging project.
-- [ ] Build and run Android tests in CI; fix any build/test failures.
-- [ ] Add real sign-in/session management to Android and wire UI screens to authenticated backend APIs.
-- [ ] Add employee/org administration UI and CSV/XLSX import with preview and validation.
-- [ ] Add secure receipt camera/file upload, file signature checks, malware scanning and durable offline drafts.
-- [ ] Complete expense review, correction history, returned-cash recording and reconciliation ledger transactions.
-- [ ] Test role and hierarchy scope policies with multiple users and multiple organisations.
-- [ ] Validate actual Daraja sandbox credentials, request/response schema, callback authentication, retries and reconciliation.
-- [ ] Integrate an authorised eTIMS verification source or deliver a controlled manual verification workflow.
-- [ ] Add load tests for the target 1,500–2,000 users, security tests, alerts, backup/restore tests and release signing.
-- [ ] Approve data residency, retention, dedicated deployment and client security requirements before production.
+- [x] Versioned multi-tenant schema for organisations, units, employees, roles, effective assignments, allocations, expenses, evidence, verification, reconciliation, disbursements and audit events.
+- [x] Baseline RLS policies and permission checks; maker/checker RPCs reject same-user submission/approval.
+- [x] Server-side invoice verification function that fails closed when no authorised KRA/provider lookup contract is configured.
+- [x] Manual invoice-review queue with organisation/permission scoping, maker-checker protection, audit events, and outcomes that cannot certify external verification.
+- [x] Android email/password sign-in, encrypted local token storage, refresh-token recovery on app start, sign-out, and session-gated entry.
+- [x] Authenticated expense submission using the employee/organisation linked to the signed-in account.
+- [x] Receipt document picker for JPEG, PNG, WebP and PDF; 10 MB bound, content-signature validation, SHA-256 metadata, private Storage upload and evidence metadata insertion.
+- [x] Separate invoice_date column and nullable VAT capture so missing VAT is not confused with an explicit zero.
+- [x] Invoice modal no longer claims an expense is certified for KRA tax filing; it calls the authenticated verification function and reports only the returned result.
+- [x] Daraja B2C submission/callback foundation that does not treat gateway acceptance as confirmed payment.
+- [x] CI creates a temporary debug signing keystore and runs Android unit tests plus debug APK assembly.
 
-## Six implementation tracks
+## Still required before production
 
-1. Prototype stability: clear demo states, unique expense IDs, current dates, Android CI.
-2. Backend persistence: schema, migrations, Auth linkage, RLS, private evidence storage.
-3. Financial domain: allocation/disbursement/expense/accepted expense/returned cash ledger separation and idempotency.
-4. Trusted integrations: eTIMS provider adapter and Daraja B2C/callback reconciliation.
-5. Configurable organisation: data-driven units, roles, effective assignments, acting roles, reporting, import.
-6. Quality and release: automated tests, security validation, staging, monitoring, backups and rollback.
+- [ ] Confirm CI is green on the latest commit and perform a real device/emulator smoke test.
+- [ ] Configure SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in the Android build secrets. Do not use a service-role key in the APK.
+- [ ] Provision an initial organisation, employee, role, permission set and assignment through a controlled administrator workflow; the live database currently has no business rows.
+- [ ] Replace remaining synthetic dashboard, advances, approvals and organisation figures with authenticated backend queries.
+- [ ] Build employee/org administration UI, role/assignment management, reporting hierarchy and CSV/XLSX import with preview/validation.
+- [ ] Complete the full expense lifecycle: finance acceptance/rejection, correction history, returned-cash recording, period reconciliation and ledger reports.
+- [ ] Add a robust durable offline draft/outbox and idempotent retry/sync flow. Offline submission currently fails closed rather than pretending to save.
+- [ ] Add camera capture, malware scanning and orphaned-storage cleanup. The current evidence workflow uses document selection and file-signature checks; it does not malware-scan files.
+- [ ] Add automated RLS and hierarchy tests using multiple authenticated users across at least two organisations and multiple roles.
+- [ ] Configure and validate Safaricom Daraja sandbox credentials, callback reachability/authenticity, retry semantics and reconciliation. No payment credentials are present, and no live transfer is enabled.
+- [ ] Confirm direct KRA invoice lookup availability or approve a provider contract; test authoritative positive, negative, partial, timeout and malformed responses before external verification can be enabled.
+- [ ] Add load tests for 1,500–2,000 users, dependency/secret scanning, alerts, backup/restore tests, release signing and rollback.
+- [ ] Approve data residency, retention, dedicated deployment and client security requirements.
 
-## Known blockers / not claimed as complete
+## Release boundary
 
-- No Supabase project has been linked or migrated by this change.
-- No provider secrets or live credentials are present.
-- The Android app is not yet connected to Supabase and still uses in-memory sample state in many screens.
-- The web controllership screen is currently a Compose wide-screen view, not a separately deployable browser app.
-- The eTIMS endpoint contract and Daraja callback behavior must be confirmed against the authorised providers.
-- No successful build, device test, live integration test or production security review is claimed by this commit.
+The connected Supabase schema and Edge Function are deployed, and the branch contains the Android integration code. This is not yet a production release: no authenticated end-to-end test has been run with a provisioned employee account, no provider credentials have been configured, and the remaining dashboard/finance/admin workflows are not complete.
+
+## Implementation tracks
+
+1. Prototype stability and truthful status messaging.
+2. Authenticated persistence, private evidence storage and offline synchronization.
+3. Finance workflow, correction history, returns and reconciliation ledger.
+4. Trusted eTIMS and Daraja integrations.
+5. Configurable organisation, roles, assignments and imports.
+6. Automated security, load, recovery and release validation.
