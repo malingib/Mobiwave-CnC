@@ -139,6 +139,30 @@ class SupabaseExpenseRepository {
         path
     }
 
+    suspend fun requestInvoiceVerification(accessToken: String, expenseId: String): String = withContext(Dispatchers.IO) {
+        requireConfigured()
+        try { UUID.fromString(expenseId) } catch (_: Exception) {
+            throw IOException("This expense is still a prototype record. Only a server-saved expense can be queued for verification.")
+        }
+        val payload = JSONObject().put("expense_id", expenseId)
+        val request = Request.Builder().url("$baseUrl/functions/v1/verify-invoice")
+            .header("apikey", publishableKey).header("Authorization", "Bearer $accessToken")
+            .header("Content-Type", "application/json")
+            .post(payload.toString().toRequestBody(jsonMedia)).build()
+        http.newCall(request).execute().use { response ->
+            val raw = response.body?.string().orEmpty()
+            val json = try { JSONObject(raw) } catch (_: Exception) { JSONObject() }
+            if (!response.isSuccessful) throw IOException(errorMessage(raw, response.code))
+            if (json.optBoolean("verified", false)) {
+                return@withContext "An authorised provider reported a positive result."
+            }
+            if (!json.optBoolean("queued_for_manual_review", false)) {
+                throw IOException(json.optString("message").ifBlank { "No authoritative verification result was returned." })
+            }
+            json.optString("message").ifBlank { "Queued for authorised manual review. No external verification was performed." }
+        }
+    }
+
     private fun executeArray(request: Request): JSONArray {
         http.newCall(request).execute().use { response ->
             val raw = response.body?.string().orEmpty()
