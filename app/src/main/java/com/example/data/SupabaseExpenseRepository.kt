@@ -11,6 +11,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.util.UUID
@@ -121,9 +122,20 @@ class SupabaseExpenseRepository {
         if (mime !in setOf("image/jpeg", "image/png", "image/webp", "application/pdf")) {
             throw IOException("Only JPEG, PNG, WebP or PDF receipts are accepted.")
         }
-        val bytes = resolver.openInputStream(uri)?.use { it.readBytes() }
-            ?: throw IOException("Could not read the selected receipt.")
-        if (bytes.isEmpty() || bytes.size > 10 * 1024 * 1024) throw IOException("Receipt must be between 1 byte and 10 MB.")
+        val bytes = resolver.openInputStream(uri)?.use { input ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(8192)
+            var total = 0
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                total += count
+                if (total > 10 * 1024 * 1024) throw IOException("Receipt must not exceed 10 MB.")
+                output.write(buffer, 0, count)
+            }
+            output.toByteArray()
+        } ?: throw IOException("Could not read the selected receipt.")
+        if (bytes.isEmpty()) throw IOException("Receipt must not be empty.")
         if (!signatureMatches(mime, bytes)) throw IOException("The file contents do not match the declared receipt type.")
         val extension = when (mime) {
             "image/jpeg" -> "jpg"
