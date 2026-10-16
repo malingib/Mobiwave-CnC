@@ -22,7 +22,7 @@ begin
   if auth.uid() is null or not public.has_permission('expenses.review') then
     raise exception 'permission denied' using errcode = '42501';
   end if;
-  if p_expense_id is null or p_decision not in ('accepted', 'rejected', 'needs_review')
+  if p_expense_id is null or p_decision is null or p_decision not in ('accepted', 'rejected', 'needs_review')
      or p_reason is null or length(trim(p_reason)) < 5 then
     raise exception 'valid decision and reason required' using errcode = '22023';
   end if;
