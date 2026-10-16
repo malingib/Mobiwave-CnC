@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,6 +42,8 @@ fun CaptureReceiptScreen(
     var amountText by remember { mutableStateOf("3,500.00") }
     var justification by remember { mutableStateOf("Fuel for emergency diesel generator and stock transfer delivery to Eastleigh branch.") }
     var isOfflineMode by remember { mutableStateOf(false) }
+    var selectedReceiptUri by remember { mutableStateOf<Uri?>(null) }
+    val receiptPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> selectedReceiptUri = uri }
 
     LazyColumn(
         modifier = Modifier
@@ -811,6 +817,27 @@ fun CaptureReceiptScreen(
             }
         }
 
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Receipt evidence", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            if (selectedReceiptUri != null) "A receipt file is selected." else "Attach a JPEG, PNG, WebP or PDF receipt.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    OutlinedButton(onClick = {
+                        receiptPicker.launch(arrayOf("image/jpeg", "image/png", "image/webp", "application/pdf"))
+                    }) { Text(if (selectedReceiptUri != null) "Change file" else "Choose file") }
+                }
+            }
+        }
+
         // 6. Action Submission Buttons
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -821,7 +848,8 @@ fun CaptureReceiptScreen(
                             amount = 3500.0,
                             category = category,
                             justification = justification,
-                            isOffline = isOfflineMode
+                            isOffline = isOfflineMode,
+                            receiptUri = selectedReceiptUri
                         )
                     },
                     modifier = Modifier
