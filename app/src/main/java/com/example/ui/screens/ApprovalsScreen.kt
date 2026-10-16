@@ -290,13 +290,13 @@ fun ApprovalsScreen(
                                 )
                                 Column {
                                     Text(
-                                        text = "Batch Approve 3 Validated",
+                                        text = "Demo: update local list",
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
                                     Text(
-                                        text = "KRA eTIMS Auto-Signed",
+                                        text = "eTIMS provider not connected",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MobiTealFixed,
                                         fontSize = 10.sp
@@ -539,7 +539,7 @@ fun ApprovalCardItem(
                             )
                         }
                         Text(
-                            text = "Fiscal CU signature matches KRA ledger",
+                            text = "Demo record — no KRA ledger check performed",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

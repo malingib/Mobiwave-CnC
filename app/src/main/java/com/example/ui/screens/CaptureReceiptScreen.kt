@@ -172,7 +172,7 @@ fun CaptureReceiptScreen(
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = "KRA Fiscal Signature Verified",
+                            text = "Demo receipt — signature not verified",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium
@@ -321,14 +321,14 @@ fun CaptureReceiptScreen(
                             }
                             Column {
                                 Text(
-                                    text = "KRA eTIMS QR DETECTED & MATCHED",
+                                    text = "Sample QR placeholder — not verified",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF005049),
                                     fontSize = 10.sp
                                 )
                                 Text(
-                                    text = "Cryptographic signature valid on KRA Tax Core",
+                                    text = "No cryptographic signature check has been performed",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -590,7 +590,7 @@ fun CaptureReceiptScreen(
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
-                                    text = "Auto-synced to Receipt",
+                                    text = "Added to temporary demo state only",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MobiTeal

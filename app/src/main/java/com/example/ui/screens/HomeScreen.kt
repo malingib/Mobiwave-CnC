@@ -358,7 +358,7 @@ fun HomeScreen(
                                         color = Color.White
                                     )
                                     Text(
-                                        text = "Fast OCR + KRA QR validation",
+                                        text = "OCR preview; KRA verification requires an authorised provider",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.White.copy(alpha = 0.7f)
                                     )
@@ -670,7 +670,7 @@ fun HomeScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "12 Verified",
+                                    text = "Demo records — verification not connected",
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MobiTeal
@@ -892,7 +892,7 @@ fun HomeScreen(
                     title = "Shell Petrol Station Westlands",
                     subtitle = "Transport / Fuel • Today, 11:20 AM",
                     amount = "KES 2,400",
-                    statusText = "Verified",
+                    statusText = "Demo only",
                     icon = Icons.Default.LocalGasStation,
                     statusType = "verified",
                     onClick = { viewModel.openInvoiceDetailModal() }
@@ -939,7 +939,7 @@ fun HomeScreen(
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "All eTIMS QR scans connect directly to the KRA Tax Invoice Management System for immediate shop VAT clearance.",
+                        text = "QR scanning or OCR alone does not verify KRA validity. An authorised provider or approved manual review is required.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

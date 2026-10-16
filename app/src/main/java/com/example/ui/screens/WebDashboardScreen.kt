@@ -330,7 +330,7 @@ fun WebDashboardScreen(
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
-                                    text = "Live Production (KRA Sandbox Audited)",
+                                    text = "DEMO MODE — synthetic sample data",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -573,7 +573,7 @@ fun WebDashboardScreen(
                             DesktopBentoCard(
                                 title = "SAFARICOM MMPS FLOAT #600984",
                                 mainFigure = formatKes(floatBalance),
-                                subtitle = "Live MMPS Balance • Verified Sync",
+                                subtitle = "No live balance connected • simulation only",
                                 footer = "Reserve Buffer: KES 2.5M • Clearance 100%",
                                 modifier = Modifier.weight(1f)
                             )
@@ -626,7 +626,7 @@ fun WebDashboardScreen(
                                             )
                                         }
                                         Text(
-                                            text = "TOTP #592816 VERIFIED",
+                                            text = "TOTP not configured — demo only",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -662,7 +662,7 @@ fun WebDashboardScreen(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Text(
-                                                text = "“Approved override for Faith Wanjiku duplicate advance warning (re-stocked emergency generator diesel in Westlands branch after 14-hour grid outage). Hard error for Peter Mutua successfully quarantined.”",
+                                                text = "Demo audit placeholder — sample decisions are not persisted, and no recipient has been verified or quarantined by a live system.",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
@@ -776,7 +776,7 @@ fun WebDashboardScreen(
                                 ) {
                                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                         FilterPillItem(
-                                            label = "All Validated",
+                                            label = "Demo Recipients",
                                             count = "37",
                                             isSelected = tableFilter == "all",
                                             onClick = { tableFilter = "all" }
@@ -802,7 +802,7 @@ fun WebDashboardScreen(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         Text(
-                                            text = "KYC CONFIDENCE SCORE: 99.4% VALIDATED",
+                                            text = "Demo data — no live KYC validation performed",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
@@ -838,7 +838,7 @@ fun WebDashboardScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Showing 4 active line items previewed (37 Total Validated) • Total Payload: 37 Records • KES 530,000.00",
+                                        text = "Illustrative payload only — sample recipient rows are not live records; KES 530,000.00 is not a verified batch total.",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -853,7 +853,7 @@ fun WebDashboardScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = "KRA eTIMS Tax CU Signer Armed",
+                                            text = "eTIMS provider not configured",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MobiTeal
@@ -902,7 +902,7 @@ fun WebDashboardScreen(
                                     }
 
                                     Text(
-                                        text = "Execute final cryptographic approval for batch transmission through Safaricom Daraja B2C MMPS secure rail.",
+                                        text = "Demo workflow only — no cryptographic approval or payment is performed here.",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -945,7 +945,7 @@ fun WebDashboardScreen(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "LIVE RAIL TELEMETRY CHECK",
+                                                    text = "SIMULATED GATEWAY STATUS",
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     fontSize = 9.sp
@@ -984,7 +984,7 @@ fun WebDashboardScreen(
                                     verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Text(
-                                        text = "Checker Review Notes & Statutory Remarks (Permanent KRA & ICPAK Record)",
+                                        text = "Demo Review Notes (not a permanent audit record)",
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
