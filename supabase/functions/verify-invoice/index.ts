@@ -99,6 +99,30 @@ Deno.serve(async (req) => {
     }, 503);
   }
 
+  const { error: auditError } = await admin.from("audit_events").insert({
+    organisation_id: expense.organisation_id,
+    actor_user_id: userData.user.id,
+    action: "invoice_verification.queued_for_manual_review",
+    entity_type: "expense",
+    entity_id: expense.id,
+    after_data: {
+      queue_id: queueId,
+      reason_code: reasonCode,
+      verified: false,
+      missing_fields: missingFields,
+    },
+  });
+  if (auditError) {
+    return json({
+      status: "needs_review",
+      verified: false,
+      queued_for_manual_review: true,
+      queue_id: queueId,
+      error: "audit_record_failed",
+      message: "The review item exists, but the audit event could not be recorded. Contact an administrator before proceeding.",
+    }, 500);
+  }
+
   return json({
     status: "needs_review",
     verified: false,
