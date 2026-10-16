@@ -113,9 +113,8 @@ class MobiWaveRepository {
                 _offlineQueue.update { list ->
                     list.map {
                         if (it.id == itemId) it.copy(
-                            amount = 7200.0,
                             status = SyncItemStatus.QUEUED,
-                            conflictReason = null
+                            conflictReason = "Adjustment requested locally; finance review and backend sync are required."
                         ) else it
                     }
                 }
@@ -125,7 +124,7 @@ class MobiWaveRepository {
                     list.map {
                         if (it.id == itemId) it.copy(
                             status = SyncItemStatus.QUEUED,
-                            conflictReason = "Escalated to Area Manager via SMS"
+                            conflictReason = "Escalation requested locally; no SMS was sent because backend integration is not configured."
                         ) else it
                     }
                 }
@@ -137,9 +136,8 @@ class MobiWaveRepository {
     }
 
     fun forcePushAllOffline() {
-        _offlineQueue.update { list ->
-            list.map { it.copy(status = SyncItemStatus.UPLOADING, progress = 100) }
-        }
+        // No network client is configured yet. Keep items queued instead of simulating an upload.
+        _simulationLog.value = "SYNC BLOCKED — no authenticated backend session is configured. Queue items remain local."
     }
 
     fun runDryRunSimulation() {

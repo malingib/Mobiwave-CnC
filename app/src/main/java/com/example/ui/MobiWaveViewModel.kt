@@ -149,12 +149,12 @@ class MobiWaveViewModel(
     fun triggerStkPinSuccess() {
         _showStkPushModal.value = false
         repository.dispatchBatch()
-        postNotification("PIN verified! Dispatched KES 530,000.00 from MMPS Float #600984.")
+        postNotification("Demo only — no M-PESA prompt or payment occurred. Live dispatch is blocked until the secured backend is configured.", isError = true)
     }
 
     fun runSimulation() {
         repository.runDryRunSimulation()
-        postNotification("mTLS Pre-Flight Ping passed. Gateway 200 OK.")
+        postNotification("Simulation only — no live gateway, certificate or float check was performed.")
     }
 
     fun submitNewExpense(
@@ -166,34 +166,34 @@ class MobiWaveViewModel(
     ) {
         repository.addExpense(merchant, amount, category, justification, isOfflineMode = isOffline)
         if (isOffline) {
-            postNotification("Expense queued locally in encrypted SQLite vault (Offline Mode).")
+            postNotification("Demo draft queued in temporary app memory only; it is not yet stored in encrypted offline storage.")
         } else {
-            postNotification("Expense KES ${String.format("%,.2f", amount)} submitted! KRA eTIMS Validated.")
+            postNotification("Demo expense KES ${String.format("%,.2f", amount)} added locally. It was not synced and eTIMS has not been verified.")
         }
         _currentTab.value = MainTab.EXPENSES
     }
 
     fun approveVoucher(id: String, branch: String) {
         repository.approveApprovalItem(id)
-        postNotification("Voucher for $branch authorized & certified for settlement.")
+        postNotification("Demo only — local pending list changed for $branch; no approval was persisted and no settlement was authorised.")
     }
 
     fun rejectVoucher(id: String, branch: String) {
         repository.rejectApprovalItem(id)
-        postNotification("Voucher for $branch rejected. Flagged for audit review.", isError = true)
+        postNotification("Demo only — local pending list changed for $branch; no rejection or audit event was persisted.", isError = true)
     }
 
     fun batchApproveClean() {
         repository.batchApproveAllClean()
-        postNotification("Batch approved 3 validated vouchers (KES 35,500.00) via biometric sign-off!")
+        postNotification("Demo only — the local list was updated. No biometric sign-off, persistent approval or payment occurred.")
     }
 
     fun resolveConflict(itemId: String, action: String) {
         repository.resolveConflict(itemId, action)
         when (action) {
-            "adjust" -> postNotification("Amount auto-adjusted to KES 7,200. Re-queued for sync.")
-            "escalate" -> postNotification("Escalation ticket dispatched to Area Manager via SMS.")
-            "discard" -> postNotification("Draft discarded from encrypted vault.")
+            "adjust" -> postNotification("Demo only — adjustment requires finance review and backend sync; no financial record was changed.")
+            "escalate" -> postNotification("Demo only — escalation was not sent by SMS; backend integration is required.")
+            "discard" -> postNotification("Demo only — item removed from the temporary local list; no encrypted vault is configured.")
         }
     }
 
@@ -205,10 +205,8 @@ class MobiWaveViewModel(
 
     fun forcePushSync() {
         viewModelScope.launch {
-            postNotification("Force push initiated over 2G socket...")
-            delay(1200)
             repository.forcePushAllOffline()
-            postNotification("All offline records successfully pushed to KRA eTIMS relay.")
+            postNotification("Sync unavailable in prototype — no records were uploaded to a server.", isError = true)
         }
     }
 
