@@ -415,6 +415,16 @@ create policy "reconciliation manage" on public.reconciliations for all to authe
 create policy "audit read" on public.audit_events for select to authenticated
   using (organisation_id = public.current_organisation_id() and public.has_permission('audit.read'));
 
+
+-- Explicit Data API privileges; RLS policies above remain the row-level enforcement boundary.
+grant usage on schema public to authenticated;
+grant select on all tables in schema public to authenticated;
+grant insert on public.expenses, public.evidence_files, public.disbursement_batches, public.disbursement_items to authenticated;
+grant insert, update, delete on public.org_units, public.employees, public.roles, public.role_permissions,
+  public.employee_assignments, public.reporting_relationships, public.allocation_rules, public.allocations,
+  public.reconciliations to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+
 create or replace function public.prevent_audit_mutation()
 returns trigger language plpgsql as $$
 begin raise exception 'audit events are append-only'; end $$;
