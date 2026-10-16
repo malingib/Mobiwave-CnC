@@ -143,8 +143,8 @@ class SupabaseExpenseRepository {
             "image/webp" -> "webp"
             else -> "pdf"
         }
-        val fileName = "\${UUID.randomUUID()}.$extension"
-        val path = "\${expense.organisationId}/\${expense.id}/$fileName"
+        val fileName = "${UUID.randomUUID()}.$extension"
+        val path = "${expense.organisationId}/${expense.id}/$fileName"
         val uploadRequest = Request.Builder()
             .url("$baseUrl/storage/v1/object/expense-evidence/$path")
             .header("apikey", publishableKey).header("Authorization", "Bearer $accessToken")
