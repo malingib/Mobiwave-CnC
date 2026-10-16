@@ -98,7 +98,7 @@ class SupabaseAuthRepository(context: Context) {
             if (!response.isSuccessful) {
                 val message = parsed.optString("msg").ifBlank {
                     parsed.optString("message").ifBlank {
-                        parsed.optString("error_description").ifBlank { "Authentication failed (\${response.code})." }
+                        parsed.optString("error_description").ifBlank { "Authentication failed (${response.code})." }
                     }
                 }
                 throw IOException(message)
