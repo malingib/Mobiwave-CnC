@@ -32,6 +32,7 @@ fun MainContainer(
     val showStkPushModal by viewModel.showStkPushModal.collectAsState()
     val notification by viewModel.notification.collectAsState()
     var showManualReviewQueue by remember { mutableStateOf(false) }
+    var showFinanceOperations by remember { mutableStateOf(false) }
 
     // Render Web Dashboard when in expanded width or when explicitly toggled
     val displayWeb = isWebDashboardMode || isTabletWidth
@@ -80,8 +81,11 @@ fun MainContainer(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Prototype screens - no live expense sync", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
-                        TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                        Text("Authenticated session", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            TextButton(onClick = { showFinanceOperations = true }) { Text("Finance") }
+                            TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                        }
                     }
                     Box(modifier = Modifier.fillMaxSize()) {
                     when (currentTab) {
@@ -110,6 +114,13 @@ fun MainContainer(
                     }
                 }
             }
+        }
+
+        if (showFinanceOperations) {
+            FinanceOperationsScreen(
+                accessToken = accessToken.orEmpty(),
+                onClose = { showFinanceOperations = false }
+            )
         }
 
         if (showManualReviewQueue) {
