@@ -39,6 +39,8 @@ fun InvoiceVerificationModal(
     var check4 by remember { mutableStateOf(true) }
     var auditNote by remember { mutableStateOf("Generator run confirmed against Branch Security Log for black-out period 13-MAY...") }
     val scrollState = rememberScrollState()
+    val selectedInvoice by viewModel.selectedInvoice.collectAsState()
+    val isRequestingVerification by viewModel.isRequestingInvoiceVerification.collectAsState()
 
     Dialog(
         onDismissRequest = { viewModel.closeInvoiceDetailModal() },
@@ -66,7 +68,7 @@ fun InvoiceVerificationModal(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "VOUCHER #EXP-2025-0514-089",
+                            text = "EXPENSE ${selectedInvoice?.id ?: "not selected"}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -145,7 +147,7 @@ fun InvoiceVerificationModal(
                                         Icon(imageVector = Icons.Default.DocumentScanner, contentDescription = null, tint = MobiTeal, modifier = Modifier.size(18.dp))
                                         Text(text = "eTIMS Physical Scan", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                                     }
-                                    Text(text = "PIN: P051239841Z", style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace)
+                                    Text(text = "PIN: DEMO-PIN", style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace)
                                 }
 
                                 // Receipt Visual Simulation
@@ -162,7 +164,7 @@ fun InvoiceVerificationModal(
                                     ) {
                                         Text(text = "TOTALENERGIES KENYA PLC", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                                         Text(text = "Westlands Service Station • Retail Branch #04", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text(text = "PIN: P051239841Z • VAT REG NO: 0102934-M", style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace)
+                                        Text(text = "PIN: DEMO-PIN • VAT REG NO: 0102934-M", style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace)
 
                                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -173,7 +175,7 @@ fun InvoiceVerificationModal(
 
                                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                             Text(text = "BUYER: TUMAINI SUPERMARKET LTD", style = MaterialTheme.typography.bodySmall)
-                                            Text(text = "BUYER PIN: P051992834K", style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
+                                            Text(text = "BUYER PIN: DEMO-PIN", style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
                                         }
 
                                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -273,13 +275,14 @@ fun InvoiceVerificationModal(
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 Text(
-                                    text = "Data Harmonization Matrix",
+                                    text = "Sample Data Comparison — Not Verified",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
 
+                                Text(text = "Illustrative values only. No live KRA lookup or supplier verification has occurred.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                                 HarmonizationRow(field = "Supplier Name", claimed = "TotalEnergies Westlands", verified = "TotalEnergies Kenya PLC", verdict = "Fuzzy 98%")
-                                HarmonizationRow(field = "Supplier PIN", claimed = "P051239841Z", verified = "P051239841Z", verdict = "100% Exact")
+                                HarmonizationRow(field = "Supplier PIN", claimed = "DEMO-PIN", verified = "DEMO-PIN", verdict = "100% Exact")
                                 HarmonizationRow(field = "Fiscal Invoice No.", claimed = "INV-2025-09812", verified = "INV-2025-09812", verdict = "100% Exact")
                                 HarmonizationRow(field = "Total Gross Amount", claimed = "KES 15,000.00", verified = "KES 15,000.00", verdict = "Zero Discrepancy")
                                 HarmonizationRow(field = "Standard Rate 16% VAT", claimed = "KES 2,068.97", verified = "KES 2,068.97", verdict = "100% Deductible")
@@ -301,7 +304,7 @@ fun InvoiceVerificationModal(
                             }
                             Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp), modifier = Modifier.weight(1f)) {
                                 Column(modifier = Modifier.padding(10.dp)) {
-                                    Text(text = "NET OPERATIONAL EXPENSE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, fontSize = 9.sp)
+                                    Text(text = "NET ODEMO-PIN EXPENSE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, fontSize = 9.sp)
                                     Text(text = "KES 12,931.03", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                                     Text(text = "Debited to Westlands #018", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                                 }
@@ -371,7 +374,7 @@ fun InvoiceVerificationModal(
                             OutlinedButton(
                                 onClick = {
                                     viewModel.closeInvoiceDetailModal()
-                                    viewModel.postNotification("Voucher rejected and returned to branch.", isError = true)
+                                    viewModel.postNotification("Rejection is not connected to the live expense-review workflow. No change was saved.", isError = true)
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MobiError)
@@ -384,7 +387,7 @@ fun InvoiceVerificationModal(
                             OutlinedButton(
                                 onClick = {
                                     viewModel.closeInvoiceDetailModal()
-                                    viewModel.postNotification("Query flagged to branch manager.")
+                                    viewModel.postNotification("No query was saved. Use the authorised manual-review queue for invoice exceptions.", isError = true)
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             ) {
@@ -393,16 +396,18 @@ fun InvoiceVerificationModal(
                         }
 
                         Button(
-                            onClick = {
-                                viewModel.closeInvoiceDetailModal()
-                                viewModel.postNotification("Voucher #EXP-2025-0514-089 accepted and certified for KRA tax filing!")
-                            },
+                            onClick = { viewModel.requestInvoiceVerification() },
+                            enabled = !isRequestingVerification,
                             colors = ButtonDefaults.buttonColors(containerColor = MobiTeal),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Verified, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            if (isRequestingVerification) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                            } else {
+                                Icon(imageVector = Icons.Default.FactCheck, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Accept & Certify for KRA Tax Filing", fontWeight = FontWeight.Bold)
+                            Text(text = if (isRequestingVerification) "Requesting..." else "Request verification / review", fontWeight = FontWeight.Bold)
                         }
                     }
                 }

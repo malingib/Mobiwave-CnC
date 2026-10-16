@@ -1,0 +1,11 @@
+project_id = "mobiwave-expense-etims"
+
+[functions.verify-invoice]
+verify_jwt = true
+
+[functions.submit-b2c-batch]
+verify_jwt = true
+
+# Callback has a shared-secret check and must be placed behind provider/source validation.
+[functions.daraja-callback]
+verify_jwt = false

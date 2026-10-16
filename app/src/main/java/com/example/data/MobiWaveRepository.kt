@@ -5,6 +5,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 class MobiWaveRepository {
 
@@ -13,7 +17,7 @@ class MobiWaveRepository {
     val employeeId = "#EMP-2041"
     val managerRole = "Shop Manager (Permanent) & Acting ATD"
     val shopName = "Tumaini Shop #042 (Nairobi East)"
-    val kraPin = "P051288491M"
+    val kraPin = "DEMO ONLY — configure via secured organisation profile"
     val avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDz6a-BRpBuaOXCqLQaa3Ec7_oh5Lf3lW2DYdPxgBWXvHZf2tgfT0C28dwgndYjUUGl635YqqOyy1lXc6TZWP5RLygUptPtNPRThSft_npZ03DHc11pVKt6YTE15Gt2F8ZRuAyhCmywgb6i6AgV8fIu-P5kTYV-yuPcS_ynj2yl2Oe2c8-SgmJXHEzsUZOrA8QWLIo7vbqDN2C0qm5wfZ_k5uRhs9LuIY8odp-PcZFn36GiYz5PWkro"
 
     val allocationLimit = 45000.0
@@ -43,7 +47,7 @@ class MobiWaveRepository {
     val batchRecipients: StateFlow<List<BatchRecipientItem>> = _batchRecipients.asStateFlow()
 
     // System Telemetry
-    private val _mPesaFloatBalance = MutableStateFlow(12660250.00)
+    private val _mPesaFloatBalance = MutableStateFlow(0.00) // No live balance is available in prototype mode.
     val mPesaFloatBalance: StateFlow<Double> = _mPesaFloatBalance.asStateFlow()
 
     private val _batchDispatched = MutableStateFlow(false)
@@ -57,24 +61,28 @@ class MobiWaveRepository {
         amount: Double,
         category: String,
         justification: String,
-        cuInvoice: String = "INV-ETIMS-2025-08912",
-        supplierPin: String = "P051102381W",
-        isOfflineMode: Boolean = false
+        cuInvoice: String = "",
+        supplierPin: String = "",
+        isOfflineMode: Boolean = false,
+        recordId: String? = null,
+        displayDate: String? = null,
+        vatAmountOverride: Double? = null,
+        demoReceiptImage: Boolean = true
     ) {
-        val nextId = "EXP-${(9050..9999).random()}"
+        val nextId = recordId ?: "EXP-${UUID.randomUUID()}"
         val newVoucher = ExpenseVoucher(
             id = nextId,
             merchantName = merchantName,
-            date = "14 May 2025",
+            date = displayDate ?: SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date()),
             grossAmount = amount,
-            vatAmount = (amount * 0.16) / 1.16,
+            vatAmount = vatAmountOverride ?: (amount * 0.16) / 1.16,
             category = category,
             cuNumber = cuInvoice,
             supplierPin = supplierPin,
             status = if (isOfflineMode) VoucherStatus.QUEUED_OFFLINE else VoucherStatus.AWAITING_FINANCE,
-            etimsStatus = if (isOfflineMode) EtimsStatus.OFFLINE else EtimsStatus.VERIFIED,
+            etimsStatus = if (isOfflineMode) EtimsStatus.OFFLINE else EtimsStatus.AWAITING_VERIFICATION,
             purpose = justification,
-            receiptImageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCimcCaeRGv9A0Gki93h4up-IQQ9gZeuoLPVrThXSJJiGiD8iskprTns7UBhWjXtdq9ru1gobmlVZbEKUGBljo2bnLTmJucHER5SuTOfjUe7a8hISZph7BauX_3j29oay2iAazlHzo3tDgfYt7H_cqGbYWfjfCdezNDKoev5hEfeRCE7t-_rzGGn18rVsUPinfpwfv_DUqnXxQBD2SaS1iBNA1TIGqkbMkmr0mb1eBVH500VQlBcX0b"
+            receiptImageUrl = if (demoReceiptImage) "https://lh3.googleusercontent.com/aida-public/AB6AXuCimcCaeRGv9A0Gki93h4up-IQQ9gZeuoLPVrThXSJJiGiD8iskprTns7UBhWjXtdq9ru1gobmlVZbEKUGBljo2bnLTmJucHER5SuTOfjUe7a8hISZph7BauX_3j29oay2iAazlHzo3tDgfYt7H_cqGbYWfjfCdezNDKoev5hEfeRCE7t-_rzGGn18rVsUPinfpwfv_DUqnXxQBD2SaS1iBNA1TIGqkbMkmr0mb1eBVH500VQlBcX0b" else null
         )
         _expenses.update { listOf(newVoucher) + it }
 
@@ -109,9 +117,8 @@ class MobiWaveRepository {
                 _offlineQueue.update { list ->
                     list.map {
                         if (it.id == itemId) it.copy(
-                            amount = 7200.0,
                             status = SyncItemStatus.QUEUED,
-                            conflictReason = null
+                            conflictReason = "Adjustment requested locally; finance review and backend sync are required."
                         ) else it
                     }
                 }
@@ -121,7 +128,7 @@ class MobiWaveRepository {
                     list.map {
                         if (it.id == itemId) it.copy(
                             status = SyncItemStatus.QUEUED,
-                            conflictReason = "Escalated to Area Manager via SMS"
+                            conflictReason = "Escalation requested locally; no SMS was sent because backend integration is not configured."
                         ) else it
                     }
                 }
@@ -133,18 +140,19 @@ class MobiWaveRepository {
     }
 
     fun forcePushAllOffline() {
-        _offlineQueue.update { list ->
-            list.map { it.copy(status = SyncItemStatus.UPLOADING, progress = 100) }
-        }
+        // No network client is configured yet. Keep items queued instead of simulating an upload.
+        _simulationLog.value = "SYNC BLOCKED — no authenticated backend session is configured. Queue items remain local."
     }
 
     fun runDryRunSimulation() {
-        _simulationLog.value = "● Testing Daraja mTLS ping & float check...\n✔ 200 OK: Safaricom Daraja B2C Gateway Live • SSL/mTLS Pinning Valid • KES 530,000.00 Float Reserved • Zero Collisions on IDEMP-MW-20250514-W21-084-77A"
+        _simulationLog.value = "SIMULATION ONLY — no Safaricom connection was made, no certificate was checked, and no funds were reserved. Configure the secured server-side Daraja integration before live testing."
     }
 
     fun dispatchBatch() {
-        _batchDispatched.value = true
-        _mPesaFloatBalance.update { it - 530000.0 }
+        // Safety guard: never mark a local UI action as a real payment.
+        // Live B2C submissions must go through the authenticated server-side gateway.
+        _batchDispatched.value = false
+        _simulationLog.value = "LIVE DISPATCH BLOCKED — this prototype has no configured Daraja gateway. No payment was submitted and the displayed float was not changed."
     }
 
     private fun initialExpenses(): List<ExpenseVoucher> = listOf(
@@ -157,9 +165,9 @@ class MobiWaveRepository {
             category = "Transport & Fuel",
             categoryIcon = "local_gas_station",
             cuNumber = "KRA-CU #9182",
-            supplierPin = "P051102381W",
+            supplierPin = "DEMO-PIN",
             status = VoucherStatus.AWAITING_FINANCE,
-            etimsStatus = EtimsStatus.VERIFIED,
+            etimsStatus = EtimsStatus.DATA_EXTRACTED,
             receiptImageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCXm4gCvjC5zGFKf_Ugpv1TYm0oI0u3utzBXcjIk2aHxm3jILIbDb7FtqvfweKf_xAWCsdXwv2Cf-bl-95k7-mBlH2Vz54m5oZOUmeKvb1t4NRDzWKynJI2JCsoBls8b4V19Q-WH4mr3I2KBzIfQXgVC-GDux9s_-2Q1M8hqv74NOn35UYIEoXmvECwTXdnkC_6RFFpK0UFMe2YtLVAkARn8b2x02Rd-09KeQuQQ9rnXCwPLFRgoU2v",
             purpose = "Fuel for emergency diesel generator and stock transfer delivery to Eastleigh branch."
         ),
@@ -172,9 +180,9 @@ class MobiWaveRepository {
             category = "Shop Supplies",
             categoryIcon = "inventory_2",
             cuNumber = "KRA-CU #7712",
-            supplierPin = "P051284729L",
+            supplierPin = "DEMO-PIN",
             status = VoucherStatus.APPROVED_RECONCILED,
-            etimsStatus = EtimsStatus.MATCHED,
+            etimsStatus = EtimsStatus.DATA_EXTRACTED,
             receiptImageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuB74ZfWWSToYthB79qNF_z6A7nRS0cOy0I4XLfKbq2DqME82fo4ZLiE2Opttmultq429nz30etWhXD7MBqJLRqfianVlPfDmBbruaQi3eGiUnb9YV8dt8Wv7qq0zSpjCKNMPO2jJJN2u9VGvmNxQ4OXJlZuzLDdc1jXIdJMC2TPxdNEgEQRnD3Oy7cnHVDcV780zeQPNZQl08SzpRiFvC84rVEVSfxtoIx_sbmg8D_PnriAM9E-FxTH",
             purpose = "Store paper towels, sanitizer and checkout receipt rolls."
         ),
@@ -187,7 +195,7 @@ class MobiWaveRepository {
             category = "Shop Maintenance",
             categoryIcon = "build",
             cuNumber = "CU Slip Unverified",
-            supplierPin = "P051900122X",
+            supplierPin = "DEMO-PIN",
             status = VoucherStatus.NEEDS_REVIEW,
             etimsStatus = EtimsStatus.NEEDS_REVIEW,
             auditFeedback = "Missing legible eTIMS invoice breakdown; please upload full slip with KRA QR.",
@@ -203,7 +211,7 @@ class MobiWaveRepository {
             category = "Logistics",
             categoryIcon = "local_shipping",
             cuNumber = "Local SQLite Cached",
-            supplierPin = "P051029193T",
+            supplierPin = "DEMO-PIN",
             status = VoucherStatus.QUEUED_OFFLINE,
             etimsStatus = EtimsStatus.OFFLINE,
             purpose = "Urgent transfer of POS receipt roll stock from Central depot."
@@ -217,7 +225,7 @@ class MobiWaveRepository {
             category = "Operations / Meals",
             categoryIcon = "restaurant",
             cuNumber = "KRA-CU #6104",
-            supplierPin = "P051882910M",
+            supplierPin = "DEMO-PIN",
             status = VoucherStatus.NEEDS_REVIEW,
             etimsStatus = EtimsStatus.NEEDS_REVIEW,
             purpose = "Associate meal stocktake overnight session."
@@ -290,7 +298,7 @@ class MobiWaveRepository {
             isEmergency = true,
             subject = "Emergency Generator Diesel (KPLC Grid Outage)",
             cuRef = "TotalEnergies CU-098234812",
-            kraStatus = "KRA QR OK",
+            kraStatus = "DEMO — NOT VERIFIED",
             linkedAdvance = "Linked Advance #ADV-042 (KES 0.00 Variance)",
             avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBlJM7PXzyt3de0kFmxH24nkq1BRLzAmVSQb6io3ujS8-mmqH9epBzh4z17px4KRSsmEiCjci_pn1rJChuufhVUCvVt_P-8O2VM0U3whfqEf1DYRUq8WbwDUww1HxItBs6i5iTnObqEEZvYbAUwU4Hn9Ppxb6kXa74Le0J-KvhK52SP6mSNA05XFHCHY9nB3Av4ikKqP3yfpR2ZY94xTHU29LlYvja5B1AQkOXdpjsbYKQZ9PuAaxlL",
             receiptThumbUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuC3Nqjyu4F49dNAleAHdFgxE30OGEi-AuydvZs6oND3iyuBcWs2k7cvsZeVZe8hX5HPXHh8NNLAMkyQDUZj90sxCpPFFATA6RnzxVXyhInICCmUDfwcWOUkIigBgPqmbZG1LK8tAg4hqWlpzFaChgUNHwPJ5YMlSU589s8OuMMEeOVm8H2XD3QEC3Q5ImK9QJee78aLLV9PzRFNqc-mzy_xaRDttTL0ng2y6k1rhsA1Tt6oHPIEvoUI"
@@ -305,7 +313,7 @@ class MobiWaveRepository {
             isEmergency = false,
             subject = "Dispatch Fragile Packaging & Boxes",
             cuRef = "Carton Co Ltd CU-889102",
-            kraStatus = "eTIMS VALID",
+            kraStatus = "DEMO — NOT VERIFIED",
             linkedAdvance = "20% Utilized (KES 8k / 40k)",
             avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCw0b7peAC4OKgqCW2jEScGrnocmVOZ5-cWSPTKln5BPQ0Sw6Jo3Kh5EVWeAqGjdm1Dm5yjE7qRe3gljkA9SG2Rd1gNCgXHtZ9xKK9OYmQq1rjhDpwKBsWA3pziO2Qx8tc79mEczy42P4udushCg7kuDLe_sVHKwp6wumF3hxX4yMSLdCZWttKCXg2GSgP2eKoU6oqDuGuBD4PUqO71vfFP8C08yv3yhd9f-vxzBvFcXi0Znpv3A2tt",
             receiptThumbUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuB74ZfWWSToYthB79qNF_z6A7nRS0cOy0I4XLfKbq2DqME82fo4ZLiE2Opttmultq429nz30etWhXD7MBqJLRqfianVlPfDmBbruaQi3eGiUnb9YV8dt8Wv7qq0zSpjCKNMPO2jJJN2u9VGvmNxQ4OXJlZuzLDdc1jXIdJMC2TPxdNEgEQRnD3Oy7cnHVDcV780zeQPNZQl08SzpRiFvC84rVEVSfxtoIx_sbmg8D_PnriAM9E-FxTH",
@@ -321,7 +329,7 @@ class MobiWaveRepository {
             isEmergency = false,
             subject = "Perishable Cold-Chain Dry Ice Consumables",
             cuRef = "DryIce Kenya Ltd CU-4491021",
-            kraStatus = "KRA QR VERIFIED",
+            kraStatus = "DEMO — NOT VERIFIED",
             linkedAdvance = "Routine allotment",
             avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDff6NUbXGy2WbSSA5-KrMqnierdD56bP5HWKaD_bYPnqqq0sYfpNHJ8N1cz0gyYEjAGQO2PNrTHxo2_e3L27ky0RNSlwWaE8uFlfUZtWZPAbpjOKSvaRBCdPgpHP_vUX8NcDtsOHNZamAT4eG82d_y_rd8OdO1gVKQ7f-kaOEcChlFOmX0tu8fAnn4kZ9B-ala6D8sSORGxZKFQcMgGdWzONx4f602Yf9L6_iIy3y-tB-y0-lLDwsC",
             receiptThumbUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCXm4gCvjC5zGFKf_Ugpv1TYm0oI0u3utzBXcjIk2aHxm3jILIbDb7FtqvfweKf_xAWCsdXwv2Cf-bl-95k7-mBlH2Vz54m5oZOUmeKvb1t4NRDzWKynJI2JCsoBls8b4V19Q-WH4mr3I2KBzIfQXgVC-GDux9s_-2Q1M8hqv74NOn35UYIEoXmvECwTXdnkC_6RFFpK0UFMe2YtLVAkARn8b2x02Rd-09KeQuQQ9rnXCwPLFRgoU2v"
@@ -361,7 +369,7 @@ class MobiWaveRepository {
             headroomPercent = 33,
             limitText = "Limit KES 45,000.00",
             makerNote = "Routine weekly field allotment",
-            checkerStatus = "Verified • Ready",
+            checkerStatus = "Demo — review required",
             isQuarantined = false,
             isWarningOverridden = false
         ),
@@ -380,7 +388,7 @@ class MobiWaveRepository {
             headroomPercent = 58,
             limitText = "Limit KES 60,000.00",
             makerNote = "14h blackout, diesel bought via Total Energies Westlands.",
-            checkerStatus = "Exception Validated",
+            checkerStatus = "Demo — review required",
             isQuarantined = false,
             isWarningOverridden = true
         ),
@@ -399,7 +407,7 @@ class MobiWaveRepository {
             headroomPercent = 20,
             limitText = "Limit KES 40,000.00",
             makerNote = "Packaging & carrier dispatch bags",
-            checkerStatus = "Verified • Ready",
+            checkerStatus = "Demo — review required",
             isQuarantined = false,
             isWarningOverridden = false
         ),
@@ -418,7 +426,7 @@ class MobiWaveRepository {
             headroomPercent = 44,
             limitText = "Limit KES 80,000.00",
             makerNote = "Toll & municipal market van entry levies",
-            checkerStatus = "Verified • Ready",
+            checkerStatus = "Demo — review required",
             isQuarantined = false,
             isWarningOverridden = false
         ),

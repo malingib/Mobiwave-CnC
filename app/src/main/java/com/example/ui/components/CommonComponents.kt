@@ -153,6 +153,14 @@ fun EtimsStatusPill(status: EtimsStatus) {
                 textColor = MobiAmberWarning
             )
         }
+        EtimsStatus.AWAITING_VERIFICATION -> {
+            StatusBadge(
+                text = "Awaiting verification",
+                icon = Icons.Default.Schedule,
+                backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                textColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         EtimsStatus.UNVERIFIED -> {
             StatusBadge(
                 text = "Unverified",

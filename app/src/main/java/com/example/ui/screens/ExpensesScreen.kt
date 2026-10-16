@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.model.ExpenseVoucher
+import com.example.model.EtimsStatus
 import com.example.model.VoucherStatus
 import com.example.ui.MobiWaveViewModel
 import com.example.ui.components.*
@@ -48,7 +49,7 @@ fun ExpensesScreen(
         expenses.filter { item ->
             val matchesFilter = when (activeFilter) {
                 "pending" -> item.status == VoucherStatus.AWAITING_FINANCE
-                "verified" -> item.status == VoucherStatus.APPROVED_RECONCILED
+                "verified" -> item.etimsStatus == EtimsStatus.VERIFIED
                 "needs-review" -> item.status == VoucherStatus.NEEDS_REVIEW
                 "offline" -> item.status == VoucherStatus.QUEUED_OFFLINE
                 else -> true

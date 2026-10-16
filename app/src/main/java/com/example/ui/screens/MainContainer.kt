@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -16,7 +18,10 @@ import com.example.ui.components.ToastNotification
 
 @Composable
 fun MainContainer(
-    viewModel: MobiWaveViewModel
+    viewModel: MobiWaveViewModel,
+    signedInEmail: String? = null,
+    accessToken: String? = null,
+    onSignOut: () -> Unit = {}
 ) {
     val configuration = LocalConfiguration.current
     val isTabletWidth = configuration.screenWidthDp >= 700
@@ -26,6 +31,8 @@ fun MainContainer(
     val showInvoiceDetailModal by viewModel.showInvoiceDetailModal.collectAsState()
     val showStkPushModal by viewModel.showStkPushModal.collectAsState()
     val notification by viewModel.notification.collectAsState()
+    var showManualReviewQueue by remember { mutableStateOf(false) }
+    var showFinanceOperations by remember { mutableStateOf(false) }
 
     // Render Web Dashboard when in expanded width or when explicitly toggled
     val displayWeb = isWebDashboardMode || isTabletWidth
@@ -44,11 +51,9 @@ fun MainContainer(
                             MainTab.ADVANCES -> "My Advances"
                             MainTab.APPROVALS -> "Approvals"
                         },
-                        subtitle = "Tumaini Retail Shop #042 - Nairobi East Region",
+                        subtitle = signedInEmail ?: "Authenticated organisation session",
                         avatarUrl = viewModel.avatarUrl,
-                        onAvatarClick = {
-                            viewModel.postNotification("Logged in as David Kiprop (#EMP-2041) • Online & Synced")
-                        },
+                        onAvatarClick = onSignOut,
                         onBackClick = if (currentTab != MainTab.HOME) {
                             { viewModel.switchTab(MainTab.HOME) }
                         } else null,
@@ -66,11 +71,23 @@ fun MainContainer(
                     )
                 }
             ) { paddingValues ->
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Authenticated session", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            TextButton(onClick = { showFinanceOperations = true }) { Text("Finance") }
+                            TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                        }
+                    }
+                    Box(modifier = Modifier.fillMaxSize()) {
                     when (currentTab) {
                         MainTab.HOME -> HomeScreen(
                             viewModel = viewModel,
@@ -94,8 +111,23 @@ fun MainContainer(
                             viewModel = viewModel
                         )
                     }
+                    }
                 }
             }
+        }
+
+        if (showFinanceOperations) {
+            FinanceOperationsScreen(
+                accessToken = accessToken.orEmpty(),
+                onClose = { showFinanceOperations = false }
+            )
+        }
+
+        if (showManualReviewQueue) {
+            ManualReviewQueueScreen(
+                accessToken = accessToken.orEmpty(),
+                onClose = { showManualReviewQueue = false }
+            )
         }
 
         // Modals (Available across all screen types)

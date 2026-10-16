@@ -1,8 +1,14 @@
 package com.example.ui
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.MobiWaveRepository
+import com.example.data.SupabaseExpenseRepository
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.example.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +34,19 @@ data class UiNotification(
 class MobiWaveViewModel(
     private val repository: MobiWaveRepository = MobiWaveRepository()
 ) : ViewModel() {
+
+    private val liveExpenseRepository = SupabaseExpenseRepository()
+    private var authenticatedAccessToken: String? = null
+    private var authenticatedUserId: String? = null
+    private var authenticatedContentResolver: ContentResolver? = null
+    private val _isSubmittingExpense = MutableStateFlow(false)
+    val isSubmittingExpense: StateFlow<Boolean> = _isSubmittingExpense.asStateFlow()
+
+    fun setAuthenticatedSession(accessToken: String?, userId: String?, contentResolver: ContentResolver? = null) {
+        authenticatedAccessToken = accessToken
+        authenticatedUserId = userId
+        authenticatedContentResolver = contentResolver
+    }
 
     // Active View Mode (true = Desktop/Web Controllership Dashboard, false = Mobile Stack)
     private val _isWebDashboardMode = MutableStateFlow(false)
@@ -84,6 +103,8 @@ class MobiWaveViewModel(
 
     private val _selectedInvoice = MutableStateFlow<ExpenseVoucher?>(null)
     val selectedInvoice: StateFlow<ExpenseVoucher?> = _selectedInvoice.asStateFlow()
+    private val _isRequestingInvoiceVerification = MutableStateFlow(false)
+    val isRequestingInvoiceVerification: StateFlow<Boolean> = _isRequestingInvoiceVerification.asStateFlow()
 
     private val _showStkPushModal = MutableStateFlow(false)
     val showStkPushModal: StateFlow<Boolean> = _showStkPushModal.asStateFlow()
@@ -138,6 +159,32 @@ class MobiWaveViewModel(
         _showInvoiceDetailModal.value = false
     }
 
+    fun requestInvoiceVerification() {
+        if (_isRequestingInvoiceVerification.value) return
+        val token = authenticatedAccessToken
+        val selected = _selectedInvoice.value
+        if (token.isNullOrBlank()) {
+            postNotification("Sign in again before requesting invoice verification.", isError = true)
+            return
+        }
+        if (selected == null) {
+            postNotification("Select a saved expense before requesting verification.", isError = true)
+            return
+        }
+        _isRequestingInvoiceVerification.value = true
+        viewModelScope.launch {
+            try {
+                val result = liveExpenseRepository.requestInvoiceVerification(token, selected.id)
+                closeInvoiceDetailModal()
+                postNotification(result)
+            } catch (e: Exception) {
+                postNotification(e.message ?: "Invoice verification request failed. No verification was claimed.", isError = true)
+            } finally {
+                _isRequestingInvoiceVerification.value = false
+            }
+        }
+    }
+
     fun openStkPushModal() {
         _showStkPushModal.value = true
     }
@@ -149,12 +196,12 @@ class MobiWaveViewModel(
     fun triggerStkPinSuccess() {
         _showStkPushModal.value = false
         repository.dispatchBatch()
-        postNotification("PIN verified! Dispatched KES 530,000.00 from MMPS Float #600984.")
+        postNotification("Demo only — no M-PESA prompt or payment occurred. Live dispatch is blocked until the secured backend is configured.", isError = true)
     }
 
     fun runSimulation() {
         repository.runDryRunSimulation()
-        postNotification("mTLS Pre-Flight Ping passed. Gateway 200 OK.")
+        postNotification("Simulation only — no live gateway, certificate or float check was performed.")
     }
 
     fun submitNewExpense(
@@ -162,38 +209,84 @@ class MobiWaveViewModel(
         amount: Double,
         category: String,
         justification: String,
-        isOffline: Boolean
+        isOffline: Boolean,
+        receiptUri: Uri? = null,
+        supplierPin: String = "",
+        invoiceNumber: String = "",
+        invoiceDate: String = "",
+        vatAmount: Double? = null
     ) {
-        repository.addExpense(merchant, amount, category, justification, isOfflineMode = isOffline)
+        if (_isSubmittingExpense.value) return
         if (isOffline) {
-            postNotification("Expense queued locally in encrypted SQLite vault (Offline Mode).")
-        } else {
-            postNotification("Expense KES ${String.format("%,.2f", amount)} submitted! KRA eTIMS Validated.")
+            postNotification("Offline drafts are not enabled yet. Nothing was saved; connect to the internet and submit online.", isError = true)
+            return
         }
-        _currentTab.value = MainTab.EXPENSES
+        val token = authenticatedAccessToken
+        val userId = authenticatedUserId
+        if (token.isNullOrBlank() || userId.isNullOrBlank()) {
+            postNotification("Sign in again before submitting an expense.", isError = true)
+            return
+        }
+        if (merchant.isBlank() || amount <= 0 || justification.isBlank()) {
+            postNotification("Enter a merchant, positive amount, and purpose.", isError = true)
+            return
+        }
+        _isSubmittingExpense.value = true
+        viewModelScope.launch {
+            try {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val created = liveExpenseRepository.createExpense(
+                    accessToken = token, userId = userId, merchant = merchant, amount = amount,
+                    category = category, purpose = justification, expenseDate = date,
+                    supplierPin = supplierPin, invoiceNumber = invoiceNumber,
+                    invoiceDate = invoiceDate, vatAmount = vatAmount
+                )
+                repository.addExpense(
+                    merchantName = created.merchantName, amount = created.grossAmount, category = category,
+                    justification = justification, cuInvoice = invoiceNumber, supplierPin = supplierPin,
+                    isOfflineMode = false, recordId = created.id, displayDate = created.expenseDate,
+                    vatAmountOverride = vatAmount ?: 0.0, demoReceiptImage = false
+                )
+                val receiptMessage = if (receiptUri != null) {
+                    try {
+                        val resolver = authenticatedContentResolver ?: throw IllegalStateException("Receipt upload is unavailable on this device.")
+                        liveExpenseRepository.uploadEvidence(resolver, token, userId, created, receiptUri)
+                        " Receipt evidence uploaded."
+                    } catch (uploadError: Exception) {
+                        " Receipt upload failed: ${uploadError.message ?: "please retry from the expense record"}."
+                    }
+                } else " Attach a receipt to complete the evidence record."
+                postNotification("Expense saved to the server.$receiptMessage eTIMS verification is still pending.")
+                _currentTab.value = MainTab.EXPENSES
+            } catch (e: Exception) {
+                postNotification(e.message ?: "Expense submission failed. No local success was recorded.", isError = true)
+            } finally {
+                _isSubmittingExpense.value = false
+            }
+        }
     }
 
     fun approveVoucher(id: String, branch: String) {
         repository.approveApprovalItem(id)
-        postNotification("Voucher for $branch authorized & certified for settlement.")
+        postNotification("Demo only — local pending list changed for $branch; no approval was persisted and no settlement was authorised.")
     }
 
     fun rejectVoucher(id: String, branch: String) {
         repository.rejectApprovalItem(id)
-        postNotification("Voucher for $branch rejected. Flagged for audit review.", isError = true)
+        postNotification("Demo only — local pending list changed for $branch; no rejection or audit event was persisted.", isError = true)
     }
 
     fun batchApproveClean() {
         repository.batchApproveAllClean()
-        postNotification("Batch approved 3 validated vouchers (KES 35,500.00) via biometric sign-off!")
+        postNotification("Demo only — the local list was updated. No biometric sign-off, persistent approval or payment occurred.")
     }
 
     fun resolveConflict(itemId: String, action: String) {
         repository.resolveConflict(itemId, action)
         when (action) {
-            "adjust" -> postNotification("Amount auto-adjusted to KES 7,200. Re-queued for sync.")
-            "escalate" -> postNotification("Escalation ticket dispatched to Area Manager via SMS.")
-            "discard" -> postNotification("Draft discarded from encrypted vault.")
+            "adjust" -> postNotification("Demo only — adjustment requires finance review and backend sync; no financial record was changed.")
+            "escalate" -> postNotification("Demo only — escalation was not sent by SMS; backend integration is required.")
+            "discard" -> postNotification("Demo only — item removed from the temporary local list; no encrypted vault is configured.")
         }
     }
 
@@ -205,10 +298,8 @@ class MobiWaveViewModel(
 
     fun forcePushSync() {
         viewModelScope.launch {
-            postNotification("Force push initiated over 2G socket...")
-            delay(1200)
             repository.forcePushAllOffline()
-            postNotification("All offline records successfully pushed to KRA eTIMS relay.")
+            postNotification("Sync unavailable in prototype — no records were uploaded to a server.", isError = true)
         }
     }
 
