@@ -12,6 +12,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.security.MessageDigest
+import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -46,8 +47,16 @@ class SupabaseExpenseRepository {
     ): CreatedExpense = withContext(Dispatchers.IO) {
         requireConfigured()
         require(accessToken.isNotBlank() && userId.isNotBlank()) { "Your session expired. Sign in again." }
-        require(merchant.isNotBlank() && amount > 0 && purpose.isNotBlank()) {
+        require(merchant.isNotBlank() && amount.isFinite() && amount > 0 && purpose.isNotBlank()) {
             "Enter a merchant, positive amount, and expense purpose."
+        }
+        if (vatAmount != null && (!vatAmount.isFinite() || vatAmount < 0)) {
+            throw IOException("VAT must be a non-negative amount.")
+        }
+        if (invoiceDate.isNotBlank()) {
+            try { LocalDate.parse(invoiceDate) } catch (_: Exception) {
+                throw IOException("Invoice date must use YYYY-MM-DD.")
+            }
         }
         val employeeRequest = Request.Builder()
             .url("$baseUrl/rest/v1/employees?select=id,organisation_id&auth_user_id=eq.$userId&status=eq.active&limit=1")
