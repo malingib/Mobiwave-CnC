@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data: expense, error: expenseError } = await admin.from("expenses")
-    .select("id,organisation_id,submitted_by,supplier_pin,cu_invoice_number,gross_amount,vat_amount,expense_date")
+    .select("id,organisation_id,submitted_by,supplier_pin,cu_invoice_number,gross_amount,vat_amount,invoice_date")
     .eq("id", payload.expense_id)
     .eq("organisation_id", orgId)
     .maybeSingle();
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
   if (!expense.supplier_pin?.trim()) missingFields.push("supplier_pin");
   if (!expense.cu_invoice_number?.trim()) missingFields.push("invoice_number");
   if (expense.gross_amount === null || Number(expense.gross_amount) < 0) missingFields.push("gross_amount");
-  if (!expense.expense_date) missingFields.push("invoice_date");
+  if (!expense.invoice_date) missingFields.push("invoice_date");
   if (expense.vat_amount === null || Number(expense.vat_amount) < 0) missingFields.push("vat_amount");
 
   // KRA's published OSCU/VSCU APIs concern system-to-system invoicing. A general
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
       supplier_pin: Boolean(expense.supplier_pin?.trim()),
       invoice_number: Boolean(expense.cu_invoice_number?.trim()),
       gross_amount: expense.gross_amount !== null,
-      invoice_date: Boolean(expense.expense_date),
+      invoice_date: Boolean(expense.invoice_date),
       vat_amount: expense.vat_amount !== null,
     },
     message: missingFields.length

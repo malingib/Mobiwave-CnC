@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,10 +38,17 @@ fun CaptureReceiptScreen(
     viewModel: MobiWaveViewModel,
     onNavigateBack: () -> Unit
 ) {
+    var merchantName by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Transport & Fuel") }
     var amountText by remember { mutableStateOf("3,500.00") }
-    var justification by remember { mutableStateOf("Fuel for emergency diesel generator and stock transfer delivery to Eastleigh branch.") }
+    var supplierPin by remember { mutableStateOf("") }
+    var invoiceNumber by remember { mutableStateOf("") }
+    var invoiceDate by remember { mutableStateOf("") }
+    var vatAmountText by remember { mutableStateOf("") }
+    var justification by remember { mutableStateOf("") }
     var isOfflineMode by remember { mutableStateOf(false) }
+    var selectedReceiptUri by remember { mutableStateOf<Uri?>(null) }
+    val receiptPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> selectedReceiptUri = uri }
 
     LazyColumn(
         modifier = Modifier
@@ -811,17 +822,82 @@ fun CaptureReceiptScreen(
             }
         }
 
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("Expense and invoice details", style = MaterialTheme.typography.titleSmall)
+                    OutlinedTextField(
+                        value = merchantName, onValueChange = { merchantName = it },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("Supplier / merchant") }, singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = amountText, onValueChange = { amountText = it },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("Gross amount (KES)") }, singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = supplierPin, onValueChange = { supplierPin = it.uppercase() },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("Supplier KRA PIN") }, singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = invoiceNumber, onValueChange = { invoiceNumber = it },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("eTIMS / Control Unit invoice number") }, singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = invoiceDate, onValueChange = { invoiceDate = it },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("Invoice date (YYYY-MM-DD)") }, singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = vatAmountText, onValueChange = { vatAmountText = it },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("VAT amount (KES; leave blank if unknown)") }, singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = justification, onValueChange = { justification = it },
+                        modifier = Modifier.fillMaxWidth(), label = { Text("Expense purpose") }, minLines = 2
+                    )
+                }
+            }
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Receipt evidence", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            if (selectedReceiptUri != null) "A receipt file is selected." else "Attach a JPEG, PNG, WebP or PDF receipt.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    OutlinedButton(onClick = {
+                        receiptPicker.launch(arrayOf("image/jpeg", "image/png", "image/webp", "application/pdf"))
+                    }) { Text(if (selectedReceiptUri != null) "Change file" else "Choose file") }
+                }
+            }
+        }
+
         // 6. Action Submission Buttons
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Button(
                     onClick = {
                         viewModel.submitNewExpense(
-                            merchant = "TotalEnergies Kilimani",
-                            amount = 3500.0,
+                            merchant = merchantName,
+                            amount = amountText.replace(",", "").toDoubleOrNull() ?: 0.0,
                             category = category,
                             justification = justification,
-                            isOffline = isOfflineMode
+                            isOffline = isOfflineMode,
+                            receiptUri = selectedReceiptUri,
+                            supplierPin = supplierPin,
+                            invoiceNumber = invoiceNumber,
+                            invoiceDate = invoiceDate,
+                            vatAmount = vatAmountText.trim().takeIf { it.isNotEmpty() }?.toDoubleOrNull()
                         )
                     },
                     modifier = Modifier
@@ -849,11 +925,15 @@ fun CaptureReceiptScreen(
                 OutlinedButton(
                     onClick = {
                         viewModel.submitNewExpense(
-                            merchant = "TotalEnergies Kilimani",
-                            amount = 3500.0,
+                            merchant = merchantName,
+                            amount = amountText.replace(",", "").toDoubleOrNull() ?: 0.0,
                             category = category,
                             justification = justification,
-                            isOffline = true
+                            isOffline = true,
+                            supplierPin = supplierPin,
+                            invoiceNumber = invoiceNumber,
+                            invoiceDate = invoiceDate,
+                            vatAmount = vatAmountText.trim().takeIf { it.isNotEmpty() }?.toDoubleOrNull()
                         )
                     },
                     modifier = Modifier

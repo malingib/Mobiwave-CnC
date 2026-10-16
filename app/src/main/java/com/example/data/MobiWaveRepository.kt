@@ -61,24 +61,28 @@ class MobiWaveRepository {
         amount: Double,
         category: String,
         justification: String,
-        cuInvoice: String = "UNVERIFIED-CU-REFERENCE",
+        cuInvoice: String = "",
         supplierPin: String = "",
-        isOfflineMode: Boolean = false
+        isOfflineMode: Boolean = false,
+        recordId: String? = null,
+        displayDate: String? = null,
+        vatAmountOverride: Double? = null,
+        demoReceiptImage: Boolean = true
     ) {
-        val nextId = "EXP-${UUID.randomUUID()}"
+        val nextId = recordId ?: "EXP-${UUID.randomUUID()}"
         val newVoucher = ExpenseVoucher(
             id = nextId,
             merchantName = merchantName,
-            date = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date()),
+            date = displayDate ?: SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date()),
             grossAmount = amount,
-            vatAmount = (amount * 0.16) / 1.16,
+            vatAmount = vatAmountOverride ?: (amount * 0.16) / 1.16,
             category = category,
             cuNumber = cuInvoice,
             supplierPin = supplierPin,
             status = if (isOfflineMode) VoucherStatus.QUEUED_OFFLINE else VoucherStatus.AWAITING_FINANCE,
             etimsStatus = if (isOfflineMode) EtimsStatus.OFFLINE else EtimsStatus.AWAITING_VERIFICATION,
             purpose = justification,
-            receiptImageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCimcCaeRGv9A0Gki93h4up-IQQ9gZeuoLPVrThXSJJiGiD8iskprTns7UBhWjXtdq9ru1gobmlVZbEKUGBljo2bnLTmJucHER5SuTOfjUe7a8hISZph7BauX_3j29oay2iAazlHzo3tDgfYt7H_cqGbYWfjfCdezNDKoev5hEfeRCE7t-_rzGGn18rVsUPinfpwfv_DUqnXxQBD2SaS1iBNA1TIGqkbMkmr0mb1eBVH500VQlBcX0b"
+            receiptImageUrl = if (demoReceiptImage) "https://lh3.googleusercontent.com/aida-public/AB6AXuCimcCaeRGv9A0Gki93h4up-IQQ9gZeuoLPVrThXSJJiGiD8iskprTns7UBhWjXtdq9ru1gobmlVZbEKUGBljo2bnLTmJucHER5SuTOfjUe7a8hISZph7BauX_3j29oay2iAazlHzo3tDgfYt7H_cqGbYWfjfCdezNDKoev5hEfeRCE7t-_rzGGn18rVsUPinfpwfv_DUqnXxQBD2SaS1iBNA1TIGqkbMkmr0mb1eBVH500VQlBcX0b" else null
         )
         _expenses.update { listOf(newVoucher) + it }
 
