@@ -210,7 +210,11 @@ class MobiWaveViewModel(
         category: String,
         justification: String,
         isOffline: Boolean,
-        receiptUri: Uri? = null
+        receiptUri: Uri? = null,
+        supplierPin: String = "",
+        invoiceNumber: String = "",
+        invoiceDate: String = "",
+        vatAmount: Double? = null
     ) {
         if (_isSubmittingExpense.value) return
         if (isOffline) {
@@ -233,12 +237,15 @@ class MobiWaveViewModel(
                 val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 val created = liveExpenseRepository.createExpense(
                     accessToken = token, userId = userId, merchant = merchant, amount = amount,
-                    category = category, purpose = justification, expenseDate = date
+                    category = category, purpose = justification, expenseDate = date,
+                    supplierPin = supplierPin, invoiceNumber = invoiceNumber,
+                    invoiceDate = invoiceDate, vatAmount = vatAmount
                 )
                 repository.addExpense(
                     merchantName = created.merchantName, amount = created.grossAmount, category = category,
-                    justification = justification, isOfflineMode = false, recordId = created.id,
-                    displayDate = created.expenseDate, vatAmountOverride = 0.0, demoReceiptImage = false
+                    justification = justification, cuInvoice = invoiceNumber, supplierPin = supplierPin,
+                    isOfflineMode = false, recordId = created.id, displayDate = created.expenseDate,
+                    vatAmountOverride = vatAmount ?: 0.0, demoReceiptImage = false
                 )
                 val receiptMessage = if (receiptUri != null) {
                     try {
