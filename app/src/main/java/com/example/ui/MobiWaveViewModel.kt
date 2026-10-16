@@ -3,6 +3,10 @@ package com.example.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.MobiWaveRepository
+import com.example.data.SupabaseExpenseRepository
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.example.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +32,17 @@ data class UiNotification(
 class MobiWaveViewModel(
     private val repository: MobiWaveRepository = MobiWaveRepository()
 ) : ViewModel() {
+
+    private val liveExpenseRepository = SupabaseExpenseRepository()
+    private var authenticatedAccessToken: String? = null
+    private var authenticatedUserId: String? = null
+    private val _isSubmittingExpense = MutableStateFlow(false)
+    val isSubmittingExpense: StateFlow<Boolean> = _isSubmittingExpense.asStateFlow()
+
+    fun setAuthenticatedSession(accessToken: String?, userId: String?) {
+        authenticatedAccessToken = accessToken
+        authenticatedUserId = userId
+    }
 
     // Active View Mode (true = Desktop/Web Controllership Dashboard, false = Mobile Stack)
     private val _isWebDashboardMode = MutableStateFlow(false)
@@ -164,13 +179,42 @@ class MobiWaveViewModel(
         justification: String,
         isOffline: Boolean
     ) {
-        repository.addExpense(merchant, amount, category, justification, isOfflineMode = isOffline)
+        if (_isSubmittingExpense.value) return
         if (isOffline) {
-            postNotification("Demo draft queued in temporary app memory only; it is not yet stored in encrypted offline storage.")
-        } else {
-            postNotification("Demo expense KES ${String.format("%,.2f", amount)} added locally. It was not synced and eTIMS has not been verified.")
+            postNotification("Offline drafts are not enabled yet. Nothing was saved; connect to the internet and submit online.", isError = true)
+            return
         }
-        _currentTab.value = MainTab.EXPENSES
+        val token = authenticatedAccessToken
+        val userId = authenticatedUserId
+        if (token.isNullOrBlank() || userId.isNullOrBlank()) {
+            postNotification("Sign in again before submitting an expense.", isError = true)
+            return
+        }
+        if (merchant.isBlank() || amount <= 0 || justification.isBlank()) {
+            postNotification("Enter a merchant, positive amount, and purpose.", isError = true)
+            return
+        }
+        _isSubmittingExpense.value = true
+        viewModelScope.launch {
+            try {
+                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val created = liveExpenseRepository.createExpense(
+                    accessToken = token, userId = userId, merchant = merchant, amount = amount,
+                    category = category, purpose = justification, expenseDate = date
+                )
+                repository.addExpense(
+                    merchantName = created.merchantName, amount = created.grossAmount, category = category,
+                    justification = justification, isOfflineMode = false, recordId = created.id,
+                    displayDate = created.expenseDate, vatAmountOverride = 0.0, demoReceiptImage = false
+                )
+                postNotification("Expense saved to the server. Receipt attachment and eTIMS verification are still pending.")
+                _currentTab.value = MainTab.EXPENSES
+            } catch (e: Exception) {
+                postNotification(e.message ?: "Expense submission failed. No local success was recorded.", isError = true)
+            } finally {
+                _isSubmittingExpense.value = false
+            }
+        }
     }
 
     fun approveVoucher(id: String, branch: String) {
