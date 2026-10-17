@@ -212,7 +212,7 @@ fun WebDashboardScreen(
                                         .background(MobiTealFixed)
                                 )
                                 Text(
-                                    text = "SAFARICOM B2C GATEWAY",
+                                    text = "M-PESA B2C • NOT CONFIGURED",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MobiTealFixed,
                                     fontSize = 9.sp,
@@ -330,7 +330,7 @@ fun WebDashboardScreen(
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
-                                    text = "Live Production (KRA Sandbox Audited)",
+                                    text = "DEMO PREVIEW • No live integrations",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -573,7 +573,7 @@ fun WebDashboardScreen(
                             DesktopBentoCard(
                                 title = "SAFARICOM MMPS FLOAT #600984",
                                 mainFigure = formatKes(floatBalance),
-                                subtitle = "Live MMPS Balance • Verified Sync",
+                                subtitle = "Sample values • Not synced",
                                 footer = "Reserve Buffer: KES 2.5M • Clearance 100%",
                                 modifier = Modifier.weight(1f)
                             )
@@ -626,7 +626,7 @@ fun WebDashboardScreen(
                                             )
                                         }
                                         Text(
-                                            text = "TOTP #592816 VERIFIED",
+                                            text = "TOTP NOT CONFIGURED",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -853,7 +853,7 @@ fun WebDashboardScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = "KRA eTIMS Tax CU Signer Armed",
+                                            text = "eTIMS CONNECTION NOT CONFIGURED",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MobiTeal
@@ -945,7 +945,7 @@ fun WebDashboardScreen(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "LIVE RAIL TELEMETRY CHECK",
+                                                    text = "DEMO INTEGRATION STATUS",
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     fontSize = 9.sp
@@ -966,7 +966,7 @@ fun WebDashboardScreen(
                                                     .padding(top = 6.dp)
                                             ) {
                                                 Text(
-                                                    text = simulationLog ?: "● DAR-B2C Gateway: Ready • mTLS Cert: Valid (CN=mmps.safaricom.co.ke) • Float Reservation Lock: Unclaimed",
+                                                    text = simulationLog ?: "Demo mode: no gateway request, certificate check, or float reservation has been performed.",
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MobiTealFixed,
                                                     fontFamily = FontFamily.Monospace,
@@ -1045,7 +1045,7 @@ fun WebDashboardScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Session Token: STK-SES-20250514-9982",
+                                            text = "Session: demo preview",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontFamily = FontFamily.Monospace,
                                             color = MaterialTheme.colorScheme.outline
@@ -1061,7 +1061,7 @@ fun WebDashboardScreen(
                                                 modifier = Modifier.size(14.dp)
                                             )
                                             Text(
-                                                text = "Encrypted with HSM AES-256-GCM",
+                                                text = "Security provider not configured",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MobiTeal
@@ -1091,7 +1091,7 @@ fun WebDashboardScreen(
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedButton(
                                         onClick = {
-                                            viewModel.postNotification("Batch rejected. Joseph Ochieng notified.", isError = true)
+                                            viewModel.postNotification("Demo only: batch rejection was not sent to any user.", isError = true)
                                         },
                                         shape = RoundedCornerShape(8.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MobiError)
@@ -1103,7 +1103,7 @@ fun WebDashboardScreen(
 
                                     OutlinedButton(
                                         onClick = {
-                                            viewModel.postNotification("Clarification request sent to Preparer Joseph Ochieng.")
+                                            viewModel.postNotification("Demo only: clarification was not sent to any user.")
                                         },
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
@@ -1137,8 +1137,8 @@ fun WebDashboardScreen(
                                         Icon(imageVector = Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = if (isDispatched) "Dispatched to Safaricom B2C"
-                                            else "Authorise & Dispatch to Safaricom B2C (KES 530,000.00)",
+                                            text = if (isDispatched) "Demo preview closed"
+                                            else "Preview payment flow (demo)",
                                             style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.Bold
                                         )
