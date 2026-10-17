@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createClient } from '@supabase/supabase-js'
 import './style.css'
+import Landing from './Landing.jsx'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -11,6 +12,7 @@ const date = (value) => value ? new Date(value).toLocaleDateString('en-KE', { da
 
 function App() {
   const [session, setSession] = useState(null)
+  const [showLogin, setShowLogin] = useState(window.location.pathname === '/login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(true)
@@ -31,6 +33,18 @@ function App() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession))
     return () => listener.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    const syncRoute = () => setShowLogin(window.location.pathname === '/login')
+    window.addEventListener('popstate', syncRoute)
+    return () => window.removeEventListener('popstate', syncRoute)
+  }, [])
+
+  function openLogin() {
+    window.history.pushState({}, '', '/login')
+    setShowLogin(true)
+    window.scrollTo(0, 0)
+  }
 
   const loadExpenses = useCallback(async () => {
     if (!supabase || !session) return
@@ -78,6 +92,8 @@ function App() {
   }
 
   if (loading) return <main className="center"><div className="loader" /><p>Loading secure workspace…</p></main>
+
+  if (!session && !showLogin) return <Landing onLogin={openLogin} />
 
   if (!supabase) return <main className="center"><section className="setup-panel"><div className="brand-mark">M</div><p className="eyebrow">MOBIWAVE · FINANCE OPERATIONS</p><h1>Configuration required</h1><p>Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in the Vercel project environment variables, then redeploy.</p><p className="muted">Only the public/anon key belongs in the browser. Never add a service-role key here.</p></section></main>
 
