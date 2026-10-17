@@ -139,7 +139,7 @@ class MobiWaveRepository {
     }
 
     fun runDryRunSimulation() {
-        _simulationLog.value = "● Testing Daraja mTLS ping & float check...\n✔ 200 OK: Safaricom Daraja B2C Gateway Live • SSL/mTLS Pinning Valid • KES 530,000.00 Float Reserved • Zero Collisions on IDEMP-MW-20250514-W21-084-77A"
+        _simulationLog.value = "DEMO DRY RUN ONLY\nNo network request was sent. Daraja credentials, provider connectivity, float balance, and transaction status have not been verified."
     }
 
     fun dispatchBatch() {
