@@ -19,6 +19,8 @@ function AdminDashboard({ supabase, session, onSignOut }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [admins, setAdmins] = useState([])
+  const [adminEmail, setAdminEmail] = useState('')
 
   const callAdmin = useCallback(async (body) => {
     const { data, error: invokeError } = await supabase.functions.invoke('cnc-admin-console', { body })
@@ -27,7 +29,7 @@ function AdminDashboard({ supabase, session, onSignOut }) {
     return data
   }, [supabase])
 
-  const loadClients = useCallback(async () => {
+  const loadAdmins = useCallback(async () => {\n    try { const data = await callAdmin({ action: 'list_admins' }); setAdmins(data.admins || []) }\n    catch (e) { setError(e.message || 'Could not load administrators.') }\n  }, [callAdmin])\n\n  async function inviteAdmin(event) {\n    event.preventDefault(); setBusy(true); setError(''); setNotice('')\n    try { const data = await callAdmin({ action: 'invite_admin', email: adminEmail.trim() }); setNotice(data.message || 'Administrator access updated.'); setAdminEmail(''); await loadAdmins() }\n    catch (e) { setError(e.message || 'Could not add administrator.') }\n    finally { setBusy(false) }\n  }\n\n  const loadClients = useCallback(async () => {
     setBusy(true); setError('')
     try {
       const data = await callAdmin({ action: 'list_clients' })
@@ -36,7 +38,7 @@ function AdminDashboard({ supabase, session, onSignOut }) {
     finally { setBusy(false) }
   }, [callAdmin])
 
-  useEffect(() => { loadClients() }, [loadClients])
+  useEffect(() => { loadClients(); loadAdmins() }, [loadClients, loadAdmins])
 
   async function createDemo(event) {
     event.preventDefault()
@@ -72,6 +74,7 @@ function AdminDashboard({ supabase, session, onSignOut }) {
       {notice && <div className="success-notice"><strong>Done</strong><span>{notice}</span><button onClick={() => setNotice('')} aria-label="Dismiss">×</button></div>}
       {!selectedClient ? <>
         <section className="stat-grid"><article className="stat"><span className="stat-label">Client organisations</span><strong>{clients.length}</strong><span className="stat-note">Across this single CNC instance</span></article><article className="stat"><span className="stat-label">Active clients</span><strong>{clients.filter(x => x.status === 'active').length}</strong><span className="stat-note">Access managed by MobiWave</span></article><article className="stat"><span className="stat-label">Demo clients</span><strong>{clients.filter(x => x.is_demo).length}</strong><span className="stat-note">Illustrative data only</span></article><article className="stat"><span className="stat-label">Admission model</span><strong className="amount">By request</strong><span className="stat-note">No public self-registration</span></article></section>
+        <section className="table-panel admin-create-panel"><div className="panel-head"><div><h2>Super administrators</h2><p className="muted">Invite trusted team members to manage CNC. They receive full platform administration privileges.</p></div><span className="record-count">{admins.length} administrators</span></div><form className="admin-create-form" onSubmit={inviteAdmin}><label>Administrator email<input type="email" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} placeholder="admin@company.com" maxLength={254} required /></label><button className="primary" disabled={busy}>{busy ? 'Working…' : '＋ Add administrator'}</button></form><div className="admin-list">{admins.map(admin => <div className="admin-list-item" key={admin.id}><div><strong>{admin.email || 'Pending email'}</strong><small>{admin.confirmed ? 'Account confirmed' : 'Invitation / confirmation pending'}</small></div><span className="pill good">Super admin</span></div>)}{!admins.length && <p className="muted">No super administrators were returned. Refresh after the initial administrator is configured.</p>}</div></section>
         <section className="table-panel admin-create-panel"><div className="panel-head"><div><h2>Create a demo client</h2><p className="muted">Creates a separate demo organisation with clearly illustrative sample expenses. It does not provision a real customer account.</p></div></div><form className="admin-create-form" onSubmit={createDemo}><label>Demo company name<input value={companyName} onChange={e => setCompanyName(e.target.value)} maxLength={120} required /></label><button className="primary" disabled={busy}>{busy ? 'Working…' : '＋ Create demo client'}</button></form></section>
         <section className="table-panel"><div className="panel-head"><div><h2>Client organisations</h2><p className="muted">New companies must contact MobiWave and be admitted by an administrator.</p></div><span className="record-count">{clients.length} organisations</span></div><div className="table-scroll"><table><thead><tr><th>Organisation</th><th>Type</th><th>Status</th><th>Expense records</th><th>Created</th><th>Support</th></tr></thead><tbody>{clients.map(client => <tr key={client.id}><td><strong>{client.name}</strong><small>{client.slug}</small></td><td>{client.is_demo ? <span className="pill pending">Demo</span> : 'Client'}</td><td><span className={'pill ' + (client.status === 'active' ? 'good' : 'bad')}>{client.status}</span></td><td>{client.expense_count || 0}</td><td>{date(client.created_at)}</td><td><button className="table-action" onClick={() => openClient(client)} disabled={busy}>View as client ↗</button></td></tr>)}</tbody></table>{!clients.length && <div className="empty"><strong>{busy ? 'Loading client organisations…' : 'No client organisations yet'}</strong><p>Create a demo client to preview the workflow, or admit a company after its access request has been reviewed.</p></div>}</div></section>
       </> : <>
