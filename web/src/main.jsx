@@ -164,7 +164,8 @@ function App() {
   const [expenses, setExpenses] = useState([])
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
-  const [lastUpdated, setLastUpdated] = useState(null)\n  const [activePage, setActivePage] = useState(window.location.hash.replace('#', '') || 'overview')
+  const [lastUpdated, setLastUpdated] = useState(null)
+  const [activePage, setActivePage] = useState(window.location.hash.replace('#', '') || 'overview')
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return }
@@ -175,6 +176,12 @@ function App() {
     })
     const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession))
     return () => listener.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    const syncHash = () => setActivePage(window.location.hash.replace('#', '') || 'overview')
+    window.addEventListener('hashchange', syncHash)
+    return () => window.removeEventListener('hashchange', syncHash)
   }, [])
 
   useEffect(() => {
@@ -242,7 +249,9 @@ function App() {
 
   if (!supabase) return <main className="center"><section className="setup-panel"><div className="brand-mark">M</div><p className="eyebrow">MOBIWAVE · FINANCE OPERATIONS</p><h1>Configuration required</h1><p>Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in the Vercel project environment variables, then redeploy.</p><p className="muted">Only the public/anon key belongs in the browser. Never add a service-role key here.</p></section></main>
 
-  if (session && !['overview', ''].includes(activePage) && ['billing', 'payments', 'profile', 'settings', 'support'].includes(activePage)) return <WorkspacePage page={activePage} session={session} supabase={supabase} onBack={() => { window.location.hash = ''; setActivePage('overview') }} onSignOut={signOut} />\n\n  if (!session) return <main className="auth-shell">
+  if (session && !['overview', ''].includes(activePage) && ['billing', 'payments', 'profile', 'settings', 'support'].includes(activePage)) return <WorkspacePage page={activePage} session={session} supabase={supabase} onBack={() => { window.location.hash = ''; setActivePage('overview') }} onSignOut={signOut} />
+
+  if (!session) return <main className="auth-shell">
     <section className="auth-intro"><div className="brand-mark">M</div><p className="eyebrow">MOBIWAVE INNOVATIONS</p><h1>Expense &amp; eTIMS</h1><p className="intro-copy">Finance operations, invoice review and expense reconciliation in one secure workspace.</p><div className="auth-foot">Kenya · KES · Role-controlled access</div></section>
     <section className="auth-form-wrap"><form className="auth-form" onSubmit={signIn}><p className="eyebrow">SECURE SIGN IN</p><h2>Welcome back</h2><p className="muted">Use your authorised workspace account.</p><label>Email address<input autoComplete="username" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" /></label><label>Password<input autoComplete="current-password" type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" /></label>{error && <p className="error">{error}</p>}<button className="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in securely'}</button><p className="fine-print">Need an account for your company? <a href="mailto:info@mobiwave.co.ke?subject=MobiWave%20CNC%20company%20access">Contact MobiWave to request access.</a></p><p className="fine-print"><a href="/" onClick={e => { e.preventDefault(); window.history.pushState({}, '', '/'); setShowLogin(false); window.scrollTo(0, 0) }}>Back to website</a></p></form></section>
   </main>
