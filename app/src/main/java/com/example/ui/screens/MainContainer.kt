@@ -43,11 +43,12 @@ fun MainContainer(
                             MainTab.CAPTURE -> "Capture Receipt"
                             MainTab.ADVANCES -> "My Advances"
                             MainTab.APPROVALS -> "Approvals"
+                            MainTab.ACCOUNT -> "Account & profile"
                         },
-                        subtitle = "Tumaini Retail Shop #042 - Nairobi East Region",
+                        subtitle = "DEMO DATA • Not connected to live account",
                         avatarUrl = viewModel.avatarUrl,
                         onAvatarClick = {
-                            viewModel.postNotification("Logged in as David Kiprop (#EMP-2041) • Online & Synced")
+                            viewModel.switchTab(MainTab.ACCOUNT)
                         },
                         onBackClick = if (currentTab != MainTab.HOME) {
                             { viewModel.switchTab(MainTab.HOME) }
@@ -93,6 +94,7 @@ fun MainContainer(
                         MainTab.APPROVALS -> ApprovalsScreen(
                             viewModel = viewModel
                         )
+                        MainTab.ACCOUNT -> AccountScreen(viewModel = viewModel)
                     }
                 }
             }
