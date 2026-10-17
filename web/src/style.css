@@ -98,3 +98,22 @@ html{scroll-behavior:smooth;scroll-padding-top:86px}
 .landing-footer>span{font-size:9px;color:#8995a4}
 @media(max-width:1050px){.landing-hero{grid-template-columns:1fr;gap:20px;padding-top:55px}.landing-hero-copy{max-width:780px;padding-bottom:0}.landing-preview{width:min(100%,650px);justify-self:center}.hero-bottom-rule{margin-top:0}.landing-intro{padding-top:70px;gap:35px}.landing-workflow{gap:45px}.landing-security{grid-template-columns:55px 1fr}.security-points{grid-column:2;grid-template-columns:repeat(3,1fr);border-left:0;border-top:1px solid #e4e9ee;padding:20px 0 0}}
 @media(max-width:680px){.landing-nav{height:70px;padding:0 17px}.landing-links{display:none}.landing-nav-cta{padding:9px 11px}.landing-hero{padding:43px 19px 0}.landing-hero h1{font-size:43px;letter-spacing:-1.9px}.landing-lead{font-size:13px;line-height:1.8}.landing-trust{gap:8px;font-size:9px}.landing-preview{padding-top:10px}.preview-title{padding:17px 13px 13px}.preview-title h2{font-size:17px}.preview-date{font-size:8px;padding:7px}.preview-metrics{gap:6px;padding:0 11px 12px}.preview-metrics>div{padding:10px 8px}.preview-metrics small{font-size:7px}.preview-metrics strong{font-size:19px}.preview-table-head,.preview-row{grid-template-columns:minmax(0,1.3fr) minmax(70px,.8fr) 62px;gap:5px;padding:11px 10px}.preview-row>span{gap:6px}.merchant-icon{width:23px;height:23px}.preview-note{left:-3px}.hero-bottom-rule{font-size:7px;line-height:1.6;align-items:flex-start}.hero-bottom-rule span:last-child{text-align:right;max-width:50%}.landing-intro{padding:62px 20px 25px;grid-template-columns:1fr;gap:18px}.landing-intro h2,.workflow-heading h2{font-size:31px}.landing-intro>p{font-size:12px}.landing-features{padding:0 20px 62px;grid-template-columns:1fr}.landing-feature{min-height:155px}.landing-workflow{padding:58px 20px;grid-template-columns:1fr;gap:27px}.workflow-steps{gap:22px 14px}.workflow-steps article{gap:9px}.workflow-steps h3{font-size:13px}.workflow-steps p{font-size:10px}.landing-security{padding:58px 20px;grid-template-columns:1fr;gap:20px}.security-symbol{width:48px;height:48px}.landing-security h2{font-size:30px}.security-points{grid-column:auto;grid-template-columns:1fr;border-top:1px solid #e4e9ee;padding:19px 0 0}.landing-cta{margin:0 15px 38px;padding:28px 22px;align-items:flex-start;flex-direction:column;gap:23px}.landing-cta-actions{align-items:flex-start;gap:16px;flex-direction:column}.landing-cta h2{font-size:28px}.landing-footer{padding:0 19px 22px;align-items:flex-start;flex-direction:column;gap:13px}}
+
+
+/* Super administrator console */
+.admin-create-panel{margin-bottom:22px}
+.admin-create-form{display:flex;align-items:flex-end;gap:14px;padding:0 22px 22px}
+.admin-create-form label{display:flex;flex:1;flex-direction:column;gap:8px;color:var(--muted,#64748b);font-size:13px;font-weight:600}
+.admin-create-form input{width:100%;min-height:44px;border:1px solid var(--line,#dbe2ea);border-radius:9px;padding:0 12px;font:inherit;color:var(--ink,#172033);background:#fff}
+.admin-create-form .primary{min-height:44px;white-space:nowrap}
+.table-action{border:1px solid #d2e4de;background:#f1f8f5;color:#12684f;border-radius:8px;padding:8px 11px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
+.table-action:hover{background:#e4f3ec}
+.table-action:disabled{opacity:.6;cursor:wait}
+.support-banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px;padding:15px 18px;border:1px solid #e6d7a7;border-radius:12px;background:#fffaf0;color:#765b17}
+.support-banner strong{font-size:13px;white-space:nowrap}
+.support-banner span{flex:1;min-width:220px;font-size:13px;line-height:1.5}
+.support-banner .secondary{min-height:36px;padding:7px 11px;background:#fff}
+.success-notice{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px 16px;border:1px solid #b8e0ce;border-radius:10px;background:#f0fbf6;color:#155d43}
+.success-notice span{flex:1;font-size:13px}
+.success-notice button{border:0;background:transparent;color:inherit;font-size:20px;cursor:pointer}
+@media(max-width:720px){.admin-create-form{align-items:stretch;flex-direction:column;padding:0 16px 18px}.admin-create-form .primary{width:100%}.support-banner{align-items:flex-start;flex-direction:column}.support-banner .secondary{width:100%}}
