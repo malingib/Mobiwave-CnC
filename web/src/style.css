@@ -117,3 +117,24 @@ html{scroll-behavior:smooth;scroll-padding-top:86px}
 .success-notice span{flex:1;font-size:13px}
 .success-notice button{border:0;background:transparent;color:inherit;font-size:20px;cursor:pointer}
 @media(max-width:720px){.admin-create-form{align-items:stretch;flex-direction:column;padding:0 16px 18px}.admin-create-form .primary{width:100%}.support-banner{align-items:flex-start;flex-direction:column}.support-banner .secondary{width:100%}}
+
+/* Workspace account, billing and support pages */
+.page-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.settings-form{padding:0 22px 24px;display:grid;gap:17px}
+.settings-form label{display:block;color:#344256;font-size:11px;font-weight:700}
+.settings-form input{display:block;width:100%;margin-top:8px;padding:12px 13px;border:1px solid #dce3eb;border-radius:7px;background:#fff;outline:none;font-size:12px;color:#253247}
+.settings-form input:focus{border-color:#128469;box-shadow:0 0 0 3px #0a9b7315}
+.settings-form input[readonly]{background:#f6f8fa;color:#7a8798}
+.settings-form .primary{margin-top:3px}
+.settings-list{padding:0 22px 20px}
+.settings-list>div{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:15px 0;border-top:1px solid #edf0f4;font-size:11px}
+.settings-list strong{color:#344256}
+.settings-list span,.settings-list a{color:#778397;text-align:right;max-width:65%;overflow-wrap:anywhere}
+.settings-list a{color:#087f63;text-decoration:none}
+.success-notice{display:flex;align-items:center;gap:12px;background:#eaf8f1;border:1px solid #c8ead9;color:#087f63;padding:12px 14px;border-radius:8px;margin-bottom:18px;font-size:11px}
+.success-notice strong{white-space:nowrap}
+.success-notice span{flex:1;overflow-wrap:anywhere}
+.success-notice button{border:0;background:transparent;font-size:20px;color:inherit}
+.empty a{color:#087f63;font-size:12px;font-weight:700;text-decoration:none}
+.empty a:hover{text-decoration:underline}
+@media(max-width:760px){.page-grid{grid-template-columns:1fr}.settings-form{padding:0 14px 18px}.settings-list{padding:0 14px 16px}.settings-list>div{gap:12px}.settings-list span,.settings-list a{max-width:60%}}
