@@ -154,7 +154,7 @@ class MobiWaveViewModel(
 
     fun runSimulation() {
         repository.runDryRunSimulation()
-        postNotification("mTLS Pre-Flight Ping passed. Gateway 200 OK.")
+        postNotification("Demo dry run completed locally. No gateway or payment provider was contacted.", isError = true)
     }
 
     fun submitNewExpense(
@@ -205,10 +205,7 @@ class MobiWaveViewModel(
 
     fun forcePushSync() {
         viewModelScope.launch {
-            postNotification("Demo preview: sync is not connected to a server.")
-            delay(500)
-            repository.forcePushAllOffline()
-            postNotification("Demo only: queue status changed locally; no records were uploaded or sent to KRA.", isError = true)
+            postNotification("Sync unavailable: this build has no authenticated server connection.", isError = true)
         }
     }
 
