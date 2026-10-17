@@ -16,7 +16,8 @@ enum class MainTab(val title: String) {
     EXPENSES("Expenses"),
     CAPTURE("Capture"),
     ADVANCES("Advances"),
-    APPROVALS("Approvals")
+    APPROVALS("Approvals"),
+    ACCOUNT("Account")
 }
 
 data class UiNotification(
@@ -148,8 +149,7 @@ class MobiWaveViewModel(
 
     fun triggerStkPinSuccess() {
         _showStkPushModal.value = false
-        repository.dispatchBatch()
-        postNotification("PIN verified! Dispatched KES 530,000.00 from MMPS Float #600984.")
+        postNotification("Demo only: no STK request was sent and no funds were transferred. Configure a verified payment backend first.", isError = true)
     }
 
     fun runSimulation() {
@@ -166,26 +166,26 @@ class MobiWaveViewModel(
     ) {
         repository.addExpense(merchant, amount, category, justification, isOfflineMode = isOffline)
         if (isOffline) {
-            postNotification("Expense queued locally in encrypted SQLite vault (Offline Mode).")
+            postNotification("Demo only: expense saved to temporary app memory. It has not synced to a server.")
         } else {
-            postNotification("Expense KES ${String.format("%,.2f", amount)} submitted! KRA eTIMS Validated.")
+            postNotification("Demo only: expense KES ${String.format("%,.2f", amount)} was added locally. No server submission or KRA validation occurred.", isError = true)
         }
         _currentTab.value = MainTab.EXPENSES
     }
 
     fun approveVoucher(id: String, branch: String) {
         repository.approveApprovalItem(id)
-        postNotification("Voucher for $branch authorized & certified for settlement.")
+        postNotification("Demo only: $branch approval changed locally. No payment or official approval was issued.", isError = true)
     }
 
     fun rejectVoucher(id: String, branch: String) {
         repository.rejectApprovalItem(id)
-        postNotification("Voucher for $branch rejected. Flagged for audit review.", isError = true)
+        postNotification("Demo only: $branch item was removed from this preview. No official decision was recorded.", isError = true)
     }
 
     fun batchApproveClean() {
         repository.batchApproveAllClean()
-        postNotification("Batch approved 3 validated vouchers (KES 35,500.00) via biometric sign-off!")
+        postNotification("Demo only: preview items changed locally. No biometric sign-off or official approval occurred.", isError = true)
     }
 
     fun resolveConflict(itemId: String, action: String) {
@@ -205,10 +205,10 @@ class MobiWaveViewModel(
 
     fun forcePushSync() {
         viewModelScope.launch {
-            postNotification("Force push initiated over 2G socket...")
-            delay(1200)
+            postNotification("Demo preview: sync is not connected to a server.")
+            delay(500)
             repository.forcePushAllOffline()
-            postNotification("All offline records successfully pushed to KRA eTIMS relay.")
+            postNotification("Demo only: queue status changed locally; no records were uploaded or sent to KRA.", isError = true)
         }
     }
 
