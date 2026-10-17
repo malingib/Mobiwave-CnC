@@ -52,7 +52,16 @@ function AdminDashboard({ supabase, session, onSignOut }) {
 
   useEffect(() => { loadClients(); loadAdmins() }, [loadClients, loadAdmins])
 
-  async function changeClientStatus(client) {\n    const nextStatus = client.status === 'suspended' ? 'active' : 'suspended'\n    if (!window.confirm((nextStatus === 'suspended' ? 'Suspend ' : 'Reactivate ') + client.name + '?')) return\n    setBusy(true); setError(''); setNotice('')\n    try { const result = await callAdmin({ action: 'set_client_status', organisationId: client.id, status: nextStatus }); setNotice(result.message); await loadClients() }\n    catch (e) { setError(e.message || 'Could not change client status.') }\n    finally { setBusy(false) }\n  }\n\n  async function createDemo(event) {
+  async function changeClientStatus(client) {
+    const nextStatus = client.status === 'suspended' ? 'active' : 'suspended'
+    if (!window.confirm((nextStatus === 'suspended' ? 'Suspend ' : 'Reactivate ') + client.name + '?')) return
+    setBusy(true); setError(''); setNotice('')
+    try { const result = await callAdmin({ action: 'set_client_status', organisationId: client.id, status: nextStatus }); setNotice(result.message); await loadClients() }
+    catch (e) { setError(e.message || 'Could not change client status.') }
+    finally { setBusy(false) }
+  }
+
+  async function createDemo(event) {
     event.preventDefault()
     setBusy(true); setError(''); setNotice('')
     try {
@@ -362,7 +371,11 @@ function App() {
 
   if (!session && !showLogin) return <Landing onLogin={openLogin} />
 
-  if (session && (session.user.app_metadata?.role === 'super_admin' || session.user.app_metadata?.is_super_admin === true)) {\n    if (['billing', 'plans', 'payments', 'audit'].includes(activePage)) return <PlatformAdminPage page={activePage} supabase={supabase} session={session} onSignOut={signOut} onNavigate={(p) => { window.location.hash = p === 'overview' ? '' : p; setActivePage(p) }} />\n    if (['profile', 'settings', 'support'].includes(activePage)) return <WorkspacePage page={activePage} session={session} supabase={supabase} onBack={() => { window.location.hash = ''; setActivePage('overview') }} onSignOut={signOut} />\n    return <AdminDashboard supabase={supabase} session={session} onSignOut={signOut} />\n  }
+  if (session && (session.user.app_metadata?.role === 'super_admin' || session.user.app_metadata?.is_super_admin === true)) {
+    if (['billing', 'plans', 'payments', 'audit'].includes(activePage)) return <PlatformAdminPage page={activePage} supabase={supabase} session={session} onSignOut={signOut} onNavigate={(p) => { window.location.hash = p === 'overview' ? '' : p; setActivePage(p) }} />
+    if (['profile', 'settings', 'support'].includes(activePage)) return <WorkspacePage page={activePage} session={session} supabase={supabase} onBack={() => { window.location.hash = ''; setActivePage('overview') }} onSignOut={signOut} />
+    return <AdminDashboard supabase={supabase} session={session} onSignOut={signOut} />
+  }
 
   if (!supabase) return <main className="center"><section className="setup-panel"><div className="brand-mark">M</div><p className="eyebrow">MOBIWAVE · FINANCE OPERATIONS</p><h1>Configuration required</h1><p>Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in the Vercel project environment variables, then redeploy.</p><p className="muted">Only the public/anon key belongs in the browser. Never add a service-role key here.</p></section></main>
 
