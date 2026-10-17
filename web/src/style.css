@@ -138,3 +138,19 @@ html{scroll-behavior:smooth;scroll-padding-top:86px}
 .empty a{color:#087f63;font-size:12px;font-weight:700;text-decoration:none}
 .empty a:hover{text-decoration:underline}
 @media(max-width:760px){.page-grid{grid-template-columns:1fr}.settings-form{padding:0 14px 18px}.settings-list{padding:0 14px 16px}.settings-list>div{gap:12px}.settings-list span,.settings-list a{max-width:60%}}
+
+/* Platform billing, subscriptions, payments and audit */
+.admin-create-form select,.invoice-form select,.payment-form select,.plan-form select{display:block;width:100%;margin-top:8px;padding:11px 12px;border:1px solid #dce3eb;border-radius:7px;background:#fff;font-size:12px;color:#253247;min-width:0}
+.invoice-form,.payment-form,.plan-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:20px 22px 24px}
+.invoice-form label,.payment-form label,.plan-form label{display:block;min-width:0;color:#344256;font-size:11px;font-weight:700}
+.invoice-form input,.payment-form input,.plan-form input{display:block;width:100%;min-width:0;margin-top:8px;padding:11px 12px;border:1px solid #dce3eb;border-radius:7px;background:#fff;font-size:12px;color:#253247}
+.invoice-form button,.payment-form button,.plan-form button{align-self:end;min-height:39px}
+.plan-form .wide-field,.payment-form .wide-field{grid-column:span 2}
+.plan-form .check-label{display:flex;align-items:center;gap:9px;padding-top:25px}
+.plan-form .check-label input{width:16px;height:16px;margin:0}
+.compact-input{max-width:140px;min-width:110px;padding:8px;border:1px solid #dce3eb;border-radius:6px;background:#fff;font-size:11px}
+.table-scroll select{max-width:160px;min-width:100px;padding:8px 9px;border:1px solid #dce3eb;border-radius:6px;background:#fff;font-size:11px}
+.danger-action{color:#a73737!important}
+.audit-details{display:block;max-width:320px;white-space:normal;overflow-wrap:anywhere;color:#64748b;font-size:10px}
+@media(max-width:950px){.invoice-form,.payment-form,.plan-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.invoice-form,.payment-form,.plan-form{grid-template-columns:1fr;padding:16px}.plan-form .wide-field,.payment-form .wide-field{grid-column:auto}.plan-form .check-label{padding-top:0}}
