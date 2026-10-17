@@ -29,7 +29,19 @@ function AdminDashboard({ supabase, session, onSignOut }) {
     return data
   }, [supabase])
 
-  const loadAdmins = useCallback(async () => {\n    try { const data = await callAdmin({ action: 'list_admins' }); setAdmins(data.admins || []) }\n    catch (e) { setError(e.message || 'Could not load administrators.') }\n  }, [callAdmin])\n\n  async function inviteAdmin(event) {\n    event.preventDefault(); setBusy(true); setError(''); setNotice('')\n    try { const data = await callAdmin({ action: 'invite_admin', email: adminEmail.trim() }); setNotice(data.message || 'Administrator access updated.'); setAdminEmail(''); await loadAdmins() }\n    catch (e) { setError(e.message || 'Could not add administrator.') }\n    finally { setBusy(false) }\n  }\n\n  const loadClients = useCallback(async () => {
+  const loadAdmins = useCallback(async () => {
+    try { const data = await callAdmin({ action: 'list_admins' }); setAdmins(data.admins || []) }
+    catch (e) { setError(e.message || 'Could not load administrators.') }
+  }, [callAdmin])
+
+  async function inviteAdmin(event) {
+    event.preventDefault(); setBusy(true); setError(''); setNotice('')
+    try { const data = await callAdmin({ action: 'invite_admin', email: adminEmail.trim() }); setNotice(data.message || 'Administrator access updated.'); setAdminEmail(''); await loadAdmins() }
+    catch (e) { setError(e.message || 'Could not add administrator.') }
+    finally { setBusy(false) }
+  }
+
+  const loadClients = useCallback(async () => {
     setBusy(true); setError('')
     try {
       const data = await callAdmin({ action: 'list_clients' })
