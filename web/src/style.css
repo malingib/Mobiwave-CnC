@@ -154,3 +154,19 @@ html{scroll-behavior:smooth;scroll-padding-top:86px}
 .audit-details{display:block;max-width:320px;white-space:normal;overflow-wrap:anywhere;color:#64748b;font-size:10px}
 @media(max-width:950px){.invoice-form,.payment-form,.plan-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.invoice-form,.payment-form,.plan-form{grid-template-columns:1fr;padding:16px}.plan-form .wide-field,.payment-form .wide-field{grid-column:auto}.plan-form .check-label{padding-top:0}}
+
+/* Enterprise admission review */
+.detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding:20px 22px;border-bottom:1px solid #e8edf3}
+.detail-grid>div{min-width:0;display:flex;flex-direction:column;gap:7px}
+.detail-grid strong,.detail-grid p{margin:0;color:#263448;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.detail-grid .detail-wide{grid-column:1/-1}
+.transition-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:20px 22px}
+.transition-form label{display:flex;flex-direction:column;gap:7px;min-width:0;color:#344256;font-size:11px;font-weight:700}
+.transition-form label:nth-child(2),.transition-form label:nth-child(3){grid-column:1/-1}
+.transition-form input,.transition-form select,.transition-form textarea{width:100%;min-width:0;padding:10px 12px;border:1px solid #dce3eb;border-radius:7px;background:#fff;color:#253247;font:inherit;font-weight:400}
+.transition-form textarea{min-height:82px;resize:vertical;line-height:1.5}
+.transition-form button{justify-self:start;align-self:end}
+tbody tr.selected-row{background:#f1f6fb;outline:1px solid #d7e4f2}
+tbody tr:focus-visible{outline:2px solid #426a91;outline-offset:-2px}
+@media(max-width:850px){.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.transition-form{grid-template-columns:1fr}.transition-form label:nth-child(n){grid-column:auto}}
+@media(max-width:600px){.detail-grid{grid-template-columns:1fr;padding:16px}.transition-form{padding:16px}}

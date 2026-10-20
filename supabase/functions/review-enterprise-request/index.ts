@@ -61,9 +61,13 @@ Deno.serve(async (request: Request) => {
 
   // Only trusted app_metadata claims count. Never accept a role from user_metadata or request JSON.
   const appMetadata = user.app_metadata ?? {};
+  const trustedRoles = Array.isArray(appMetadata.roles) ? appMetadata.roles : [];
   const isMobiwaveAdmin = appMetadata.mobiwave_admin === true ||
     appMetadata.role === "mobiwave_admin" ||
-    (Array.isArray(appMetadata.roles) && appMetadata.roles.includes("mobiwave_admin"));
+    appMetadata.role === "super_admin" ||
+    appMetadata.is_super_admin === true ||
+    trustedRoles.includes("mobiwave_admin") ||
+    trustedRoles.includes("super_admin");
   if (!isMobiwaveAdmin) {
     return response(403, { error: "mobiwave_admin_required" });
   }
@@ -77,6 +81,19 @@ Deno.serve(async (request: Request) => {
     body = parsed as Record<string, unknown>;
   } catch {
     return response(400, { error: "invalid_json_body" });
+  }
+
+  if (body.action === "list") {
+    const { data: requests, error: listError } = await adminClient
+      .from("cnc_enterprise_requests")
+      .select("id, legal_name, trading_name, contact_name, contact_email, contact_phone, country_code, estimated_users, locations_summary, department_summary, configuration_requirements, status, reviewer_user_id, review_notes, reviewed_at, provisioned_organisation_id, created_at, updated_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (listError) {
+      return response(500, { error: "enterprise_request_list_failed" });
+    }
+    return response(200, { requests: requests ?? [] });
   }
 
   const requestId = body.request_id;
