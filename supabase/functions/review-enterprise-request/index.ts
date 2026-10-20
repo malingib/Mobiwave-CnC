@@ -61,9 +61,13 @@ Deno.serve(async (request: Request) => {
 
   // Only trusted app_metadata claims count. Never accept a role from user_metadata or request JSON.
   const appMetadata = user.app_metadata ?? {};
+  const trustedRoles = Array.isArray(appMetadata.roles) ? appMetadata.roles : [];
   const isMobiwaveAdmin = appMetadata.mobiwave_admin === true ||
     appMetadata.role === "mobiwave_admin" ||
-    (Array.isArray(appMetadata.roles) && appMetadata.roles.includes("mobiwave_admin"));
+    appMetadata.role === "super_admin" ||
+    appMetadata.is_super_admin === true ||
+    trustedRoles.includes("mobiwave_admin") ||
+    trustedRoles.includes("super_admin");
   if (!isMobiwaveAdmin) {
     return response(403, { error: "mobiwave_admin_required" });
   }
