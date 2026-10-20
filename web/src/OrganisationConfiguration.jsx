@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 const TABS = [
   { id: 'units', label: 'Units & departments' },
+  { id: 'employees', label: 'Employees & import' },
   { id: 'roles', label: 'Roles' },
   { id: 'assignments', label: 'Assignments' },
   { id: 'reporting', label: 'Reporting lines' },
@@ -18,6 +19,41 @@ const PERMISSIONS = [
   ['reconciliations.manage', 'Manage reconciliations'],
   ['audit.read', 'Read audit events'],
 ]
+function parseCsvLine(line) {
+  const cells = []; let value = ''; let quoted = false
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+    if (char === '"' && quoted && line[i + 1] === '"') { value += '"'; i++ }
+    else if (char === '"') quoted = !quoted
+    else if (char === ',' && !quoted) { cells.push(value.trim()); value = '' }
+    else value += char
+  }
+  if (quoted) throw new Error('CSV contains an unclosed quoted field.')
+  cells.push(value.trim())
+  return cells
+}
+function parseEmployeeCsv(text) {
+  const lines = text.replace(/^\\uFEFF/, '').split(/\\r?\\n/).filter(line => line.trim())
+  if (lines.length < 2) throw new Error('CSV needs a header and at least one employee row.')
+  const headers = parseCsvLine(lines[0]).map(x => x.toLowerCase())
+  const required = ['employee_number', 'full_name']
+  const missing = required.filter(x => !headers.includes(x))
+  if (missing.length) throw new Error('Missing required CSV columns: ' + missing.join(', '))
+  const rows = lines.slice(1).map((line, i) => {
+    const cells = parseCsvLine(line)
+    const row = Object.fromEntries(headers.map((h, j) => [h, cells[j] || '']))
+    return { line: i + 2, employee_number: row.employee_number.trim(), full_name: row.full_name.trim(), email: row.email.trim() || null, phone_e164: row.phone_e164.trim() || null, status: (row.status || 'active').toLowerCase() }
+  })
+  const errors = []
+  const seen = new Set()
+  rows.forEach(r => {
+    if (!r.employee_number || !r.full_name) errors.push('Line ' + r.line + ': employee_number and full_name are required.')
+    if (!['active','inactive','suspended'].includes(r.status)) errors.push('Line ' + r.line + ': status must be active, inactive or suspended.')
+    if (seen.has(r.employee_number)) errors.push('Line ' + r.line + ': duplicate employee_number ' + r.employee_number + ' in this file.')
+    seen.add(r.employee_number)
+  })
+  return { rows, errors }
+}
 const fmtDate = (v) => v ? new Date(v).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
 export default function OrganisationConfiguration({ supabase, session, onBack, onSignOut }) {
@@ -28,6 +64,9 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
   const [employees, setEmployees] = useState([])
   const [assignments, setAssignments] = useState([])
   const [reporting, setReporting] = useState([])
+  const [csvRows, setCsvRows] = useState([])
+  const [csvErrors, setCsvErrors] = useState([])
+  const [csvFileName, setCsvFileName] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -74,6 +113,37 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
       if (reset) reset()
       await load()
     } catch (e) { setError(e.message || 'Could not save configuration. Check your organisation-management permissions and field values.') }
+    finally { setBusy(false) }
+  }
+
+  async function readEmployeeCsv(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setCsvFileName(file.name); setCsvRows([]); setCsvErrors([]); setError('')
+    try {
+      if (file.size > 5 * 1024 * 1024) throw new Error('CSV file must be 5 MB or smaller.')
+      const parsed = parseEmployeeCsv(await file.text())
+      if (parsed.rows.length > 2000) throw new Error('Import is limited to 2,000 employee rows per batch.')
+      setCsvRows(parsed.rows); setCsvErrors(parsed.errors)
+    } catch (e) { setCsvErrors([e.message || 'Could not parse CSV.']) }
+  }
+
+  async function importEmployees() {
+    if (!organisationId || !csvRows.length || csvErrors.length) return
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const numbers = csvRows.map(r => r.employee_number)
+      const { data: existing, error: existingError } = await supabase.from('employees').select('employee_number').in('employee_number', numbers)
+      if (existingError) throw existingError
+      const duplicates = new Set((existing || []).map(r => r.employee_number))
+      if (duplicates.size) throw new Error('Import stopped; employee numbers already exist: ' + [...duplicates].slice(0, 10).join(', '))
+      const payload = csvRows.map(({ line, ...r }) => ({ organisation_id: organisationId, ...r }))
+      const { error: importError } = await supabase.from('employees').insert(payload)
+      if (importError) throw importError
+      setNotice(`Imported ${payload.length} employee records. No roles or assignments were inferred.`)
+      setCsvRows([]); setCsvErrors([]); setCsvFileName('')
+      await load()
+    } catch (e) { setError(e.message || 'Employee import failed; no partial retry should be attempted until the error is reviewed.') }
     finally { setBusy(false) }
   }
 
@@ -145,6 +215,13 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
             <button className="primary" disabled={busy || !organisationId}>Add unit / department</button>
           </form>
           <div className="table-scroll"><table><thead><tr><th>Unit</th><th>Type</th><th>Parent</th><th>Code</th><th>Status</th></tr></thead><tbody>{units.map(x => <tr key={x.id}><td><strong>{x.name}</strong></td><td>{x.unit_type}</td><td>{unitNames[x.parent_id] || '—'}</td><td>{x.code}</td><td>{x.status}</td></tr>)}</tbody></table>{!units.length && <div className="empty"><strong>No organisation units</strong><p>Add a head office, zone, region, shop or department to begin.</p></div>}</div>
+        </>}
+        {tab === 'employees' && <>
+          <div className="import-intro"><h3>Employee register import</h3><p>Upload a verified staff CSV. This imports employee identity records only; role assignments and reporting lines must be configured separately.</p><p>Required columns: <code>employee_number,full_name</code>. Optional columns: <code>email,phone_e164,status</code>.</p><button className="secondary" type="button" onClick={() => { const csv = 'employee_number,full_name,email,phone_e164,status\\nEMP-001,Example Employee,employee@example.com,+254700000000,active\\n'; const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = 'cnc-employees-template.csv'; a.click(); URL.revokeObjectURL(url) }}>Download CSV template</button></div>
+          <div className="import-upload"><label>Choose employee CSV<input type="file" accept=".csv,text/csv" onChange={readEmployeeCsv} /></label>{csvFileName && <span>{csvFileName} · {csvRows.length} rows parsed</span>}</div>
+          {!!csvErrors.length && <div className="notice" role="alert"><strong>Fix the CSV before importing</strong><ul>{csvErrors.slice(0,12).map((e,i) => <li key={i}>{e}</li>)}</ul></div>}
+          {!!csvRows.length && !csvErrors.length && <><div className="panel-head"><div><h3>Import preview</h3><p className="muted">Review the first 10 of {csvRows.length} parsed rows. Existing employee numbers will be checked before insert.</p></div><button className="primary" disabled={busy || !organisationId} onClick={importEmployees}>Import {csvRows.length} employees</button></div><div className="table-scroll"><table><thead><tr><th>Employee number</th><th>Full name</th><th>Email</th><th>Phone</th><th>Status</th></tr></thead><tbody>{csvRows.slice(0,10).map(r => <tr key={r.line}><td>{r.employee_number}</td><td>{r.full_name}</td><td>{r.email || '—'}</td><td>{r.phone_e164 || '—'}</td><td>{r.status}</td></tr>)}</tbody></table></div></>}
+          <div className="table-scroll"><table><thead><tr><th>Employee number</th><th>Full name</th><th>Email</th><th>Status</th></tr></thead><tbody>{employees.map(e => <tr key={e.id}><td>{e.employee_number}</td><td><strong>{e.full_name}</strong></td><td>{e.email || '—'}</td><td>{e.status}</td></tr>)}</tbody></table></div>
         </>}
         {tab === 'roles' && <>
           <form className="admin-create-form transition-form" onSubmit={createRole}>
