@@ -42,9 +42,9 @@ fun WebDashboardScreen(
     var webSubTab by remember { mutableStateOf("dual_approval") } // "dual_approval" vs "overview_matrix"
     var tableFilter by remember { mutableStateOf("all") } // "all", "warn", "quar"
     var checkerRemarks by remember {
-        mutableStateOf("Pre-flight KYC matches verified against HR master data. Westlands emergency fuel override examined and verified with regional trade manager log. Approved for immediate Safaricom MMPS B2C execution.")
+        mutableStateOf("Demo-only placeholder. Add a finance review note after verifying the selected recipients, allocation limits and supporting records.")
     }
-    var isAttested by remember { mutableStateOf(true) }
+    var isAttested by remember { mutableStateOf(false) }
     var selectedAuthMethod by remember { mutableStateOf("stk") }
 
     val batchRecipients by viewModel.batchRecipients.collectAsState()
@@ -212,7 +212,7 @@ fun WebDashboardScreen(
                                         .background(MobiTealFixed)
                                 )
                                 Text(
-                                    text = "M-PESA B2C • NOT CONFIGURED",
+                                    text = "SAFARICOM B2C GATEWAY",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MobiTealFixed,
                                     fontSize = 9.sp,
@@ -330,7 +330,7 @@ fun WebDashboardScreen(
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
-                                    text = "DEMO PREVIEW • No live integrations",
+                                    text = "DEMO MODE — synthetic sample data",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -476,7 +476,7 @@ fun WebDashboardScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "Maker Attestation: Signed & Cryptographically Sealed",
+                                                text = "Maker Attestation: Demo placeholder — not signed",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -510,7 +510,7 @@ fun WebDashboardScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text(text = "Run mTLS Pre-Flight", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text(text = "Run simulation (no live connection)", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                     }
 
                                     Surface(
@@ -573,7 +573,7 @@ fun WebDashboardScreen(
                             DesktopBentoCard(
                                 title = "SAFARICOM MMPS FLOAT #600984",
                                 mainFigure = formatKes(floatBalance),
-                                subtitle = "Sample values • Not synced",
+                                subtitle = "No live balance connected • simulation only",
                                 footer = "Reserve Buffer: KES 2.5M • Clearance 100%",
                                 modifier = Modifier.weight(1f)
                             )
@@ -619,14 +619,14 @@ fun WebDashboardScreen(
                                                 modifier = Modifier.size(16.dp)
                                             )
                                             Text(
-                                                text = "Step 1: Maker Attestation (Completed)",
+                                                text = "Step 1: Maker Attestation (Not confirmed)",
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                         Text(
-                                            text = "TOTP NOT CONFIGURED",
+                                            text = "TOTP not configured — demo only",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -662,7 +662,7 @@ fun WebDashboardScreen(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Text(
-                                                text = "“Approved override for Faith Wanjiku duplicate advance warning (re-stocked emergency generator diesel in Westlands branch after 14-hour grid outage). Hard error for Peter Mutua successfully quarantined.”",
+                                                text = "Demo audit placeholder — sample decisions are not persisted, and no recipient has been verified or quarantined by a live system.",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
@@ -724,7 +724,7 @@ fun WebDashboardScreen(
                                         Column {
                                             Text(text = "SEGREGATION CLEARANCE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 9.sp)
                                             Text(text = "Full Independent Review", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                            Text(text = "Safaricom MMPS Cert: Valid (Exp 2026)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(text = "Daraja credentials: Not configured (demo mode)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
 
@@ -776,7 +776,7 @@ fun WebDashboardScreen(
                                 ) {
                                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                         FilterPillItem(
-                                            label = "All Validated",
+                                            label = "Demo Recipients",
                                             count = "37",
                                             isSelected = tableFilter == "all",
                                             onClick = { tableFilter = "all" }
@@ -802,7 +802,7 @@ fun WebDashboardScreen(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         Text(
-                                            text = "KYC CONFIDENCE SCORE: 99.4% VALIDATED",
+                                            text = "Demo data — no live KYC validation performed",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
@@ -838,7 +838,7 @@ fun WebDashboardScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Showing 4 active line items previewed (37 Total Validated) • Total Payload: 37 Records • KES 530,000.00",
+                                        text = "Illustrative payload only — sample recipient rows are not live records; KES 530,000.00 is not a verified batch total.",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -853,7 +853,7 @@ fun WebDashboardScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = "eTIMS CONNECTION NOT CONFIGURED",
+                                            text = "eTIMS provider not configured",
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MobiTeal
@@ -902,7 +902,7 @@ fun WebDashboardScreen(
                                     }
 
                                     Text(
-                                        text = "Execute final cryptographic approval for batch transmission through Safaricom Daraja B2C MMPS secure rail.",
+                                        text = "Demo workflow only — no cryptographic approval or payment is performed here.",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -945,7 +945,7 @@ fun WebDashboardScreen(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "DEMO INTEGRATION STATUS",
+                                                    text = "SIMULATED GATEWAY STATUS",
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     fontSize = 9.sp
@@ -966,7 +966,7 @@ fun WebDashboardScreen(
                                                     .padding(top = 6.dp)
                                             ) {
                                                 Text(
-                                                    text = simulationLog ?: "Demo mode: no gateway request, certificate check, or float reservation has been performed.",
+                                                    text = simulationLog ?: "SIMULATION MODE — no live Daraja connection, certificate check or float reservation has occurred.",
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MobiTealFixed,
                                                     fontFamily = FontFamily.Monospace,
@@ -984,7 +984,7 @@ fun WebDashboardScreen(
                                     verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Text(
-                                        text = "Checker Review Notes & Statutory Remarks (Permanent KRA & ICPAK Record)",
+                                        text = "Demo Review Notes (not a permanent audit record)",
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -1030,7 +1030,7 @@ fun WebDashboardScreen(
                                                     color = MaterialTheme.colorScheme.onSurface
                                                 )
                                                 Text(
-                                                    text = "“I, Grace Muthoni (ICPAK #9412, FM-003), confirm full dual-control segregation of duties under Tumaini Retail Financial Governance Framework. I certify that 37 lines have been validated, the non-payroll policy has been respected, and I hereby authorise the immediate debit and execution of KES 530,000.00 from Safaricom MMPS Float #600984.”",
+                                                    text = "Prototype placeholder only. A real authenticated maker, approver and submitter must independently validate the batch, recipients, expense-only purpose and funding before any live request. This prototype cannot authorise a payment.",
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     modifier = Modifier.padding(top = 2.dp)
@@ -1045,7 +1045,7 @@ fun WebDashboardScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "Session: demo preview",
+                                            text = "Session Token: STK-SES-20250514-9982",
                                             style = MaterialTheme.typography.bodySmall,
                                             fontFamily = FontFamily.Monospace,
                                             color = MaterialTheme.colorScheme.outline
@@ -1061,7 +1061,7 @@ fun WebDashboardScreen(
                                                 modifier = Modifier.size(14.dp)
                                             )
                                             Text(
-                                                text = "Security provider not configured",
+                                                text = "Encrypted with HSM AES-256-GCM",
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MobiTeal
@@ -1091,7 +1091,7 @@ fun WebDashboardScreen(
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedButton(
                                         onClick = {
-                                            viewModel.postNotification("Demo only: batch rejection was not sent to any user.", isError = true)
+                                            viewModel.postNotification("Batch rejected. Joseph Ochieng notified.", isError = true)
                                         },
                                         shape = RoundedCornerShape(8.dp),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MobiError)
@@ -1103,7 +1103,7 @@ fun WebDashboardScreen(
 
                                     OutlinedButton(
                                         onClick = {
-                                            viewModel.postNotification("Demo only: clarification was not sent to any user.")
+                                            viewModel.postNotification("Clarification request sent to Preparer Joseph Ochieng.")
                                         },
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
@@ -1137,8 +1137,8 @@ fun WebDashboardScreen(
                                         Icon(imageVector = Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = if (isDispatched) "Demo preview closed"
-                                            else "Preview payment flow (demo)",
+                                            text = if (isDispatched) "Dispatched to Safaricom B2C"
+                                            else "Live B2C disabled — configure backend first",
                                             style = MaterialTheme.typography.labelLarge,
                                             fontWeight = FontWeight.Bold
                                         )
