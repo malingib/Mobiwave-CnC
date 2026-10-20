@@ -6,6 +6,18 @@ const TABS = [
   { id: 'assignments', label: 'Assignments' },
   { id: 'reporting', label: 'Reporting lines' },
 ]
+const PERMISSIONS = [
+  ['organisation.manage', 'Manage organisation structure'],
+  ['employees.manage', 'Manage employee records'],
+  ['roles.manage', 'Manage roles and permissions'],
+  ['allocations.manage', 'Manage expense allocations'],
+  ['disbursements.prepare', 'Prepare disbursement batches'],
+  ['disbursements.approve', 'Approve disbursement batches'],
+  ['disbursements.submit', 'Submit approved batches'],
+  ['expenses.review', 'Review expenses'],
+  ['reconciliations.manage', 'Manage reconciliations'],
+  ['audit.read', 'Read audit events'],
+]
 const fmtDate = (v) => v ? new Date(v).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
 export default function OrganisationConfiguration({ supabase, session, onBack, onSignOut }) {
@@ -20,7 +32,7 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [unit, setUnit] = useState({ unit_type: 'shop', code: '', name: '', parent_id: '' })
-  const [role, setRole] = useState({ role_key: '', name: '', description: '' })
+  const [role, setRole] = useState({ role_key: '', name: '', description: '', permissions: [] })
   const [assignment, setAssignment] = useState({ employee_id: '', role_id: '', org_unit_id: '', starts_at: new Date().toISOString().slice(0,10), ends_at: '', is_acting: false })
   const [line, setLine] = useState({ employee_id: '', manager_employee_id: '', org_unit_id: '', starts_at: new Date().toISOString().slice(0,10), ends_at: '' })
 
@@ -63,6 +75,28 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
       await load()
     } catch (e) { setError(e.message || 'Could not save configuration. Check your organisation-management permissions and field values.') }
     finally { setBusy(false) }
+  }
+
+  async function createRole(event) {
+    event.preventDefault(); setBusy(true); setError(''); setNotice('')
+    let createdRole = null
+    try {
+      const payload = { organisation_id: organisationId, role_key: role.role_key.trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_'), name: role.name.trim(), description: role.description.trim() || null, is_system_role: false }
+      const { data, error: roleError } = await supabase.from('roles').insert(payload).select('id').single()
+      if (roleError) throw roleError
+      createdRole = data
+      if (role.permissions.length) {
+        const rows = role.permissions.map(permission_key => ({ role_id: data.id, permission_key }))
+        const { error: permissionError } = await supabase.from('role_permissions').insert(rows)
+        if (permissionError) throw new Error('Role created, but permission grants failed: ' + permissionError.message)
+      }
+      setRole({ role_key: '', name: '', description: '', permissions: [] })
+      setNotice('Role and selected permission grants saved.')
+      await load()
+    } catch (e) {
+      setError(e.message || (createdRole ? 'Role created, but permission grants failed.' : 'Could not create role.'))
+      if (createdRole) await load()
+    } finally { setBusy(false) }
   }
 
   async function endAssignment(id) {
@@ -112,11 +146,12 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
           <div className="table-scroll"><table><thead><tr><th>Unit</th><th>Type</th><th>Parent</th><th>Code</th><th>Status</th></tr></thead><tbody>{units.map(x => <tr key={x.id}><td><strong>{x.name}</strong></td><td>{x.unit_type}</td><td>{unitNames[x.parent_id] || '—'}</td><td>{x.code}</td><td>{x.status}</td></tr>)}</tbody></table>{!units.length && <div className="empty"><strong>No organisation units</strong><p>Add a head office, zone, region, shop or department to begin.</p></div>}</div>
         </>}
         {tab === 'roles' && <>
-          <form className="admin-create-form transition-form" onSubmit={e => save(e, 'roles', { ...role, role_key: role.role_key.trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_'), is_system_role: false }, () => setRole({ role_key: '', name: '', description: '' }))}>
+          <form className="admin-create-form transition-form" onSubmit={createRole}>
             <label>Role key<input required maxLength={80} value={role.role_key} onChange={e => setRole(v => ({ ...v, role_key: e.target.value }))} placeholder="shop_manager" /></label>
             <label>Role name<input required maxLength={120} value={role.name} onChange={e => setRole(v => ({ ...v, name: e.target.value }))} placeholder="Shop Manager" /></label>
             <label>Description<textarea maxLength={2000} value={role.description} onChange={e => setRole(v => ({ ...v, description: e.target.value }))} placeholder="Responsibilities and scope" /></label>
-            <button className="primary" disabled={busy || !organisationId}>Create role</button>
+            <fieldset className="permission-picker"><legend>Permission grants</legend>{PERMISSIONS.map(([key, description]) => <label key={key} className="permission-option"><input type="checkbox" checked={role.permissions.includes(key)} onChange={e => setRole(v => ({ ...v, permissions: e.target.checked ? [...v.permissions, key] : v.permissions.filter(p => p !== key) }))} /><span><strong>{description}</strong><small>{key}</small></span></label>)}</fieldset>
+            <button className="primary" disabled={busy || !organisationId}>Create role and permissions</button>
           </form>
           <div className="table-scroll"><table><thead><tr><th>Role</th><th>Key</th><th>Description</th><th>System role</th></tr></thead><tbody>{roles.map(x => <tr key={x.id}><td><strong>{x.name}</strong></td><td>{x.role_key}</td><td>{x.description || '—'}</td><td>{x.is_system_role ? 'Yes' : 'No'}</td></tr>)}</tbody></table></div>
         </>}
