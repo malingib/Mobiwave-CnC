@@ -14,13 +14,21 @@
 - [x] Daraja B2C submission/callback foundation that does not treat gateway acceptance as confirmed payment.
 - [x] CI creates a temporary debug signing keystore and runs Android unit tests plus debug APK assembly.
 
+## Added on feature/configurable-organisation-monolith
+
+- [x] Architecture contract for one monolith with tenant-specific, configurable organisation structures, departments, roles, effective-dated assignments and approval workflows.
+- [x] Initial Sun King configuration requirements documented as editable input data: 5 zones, 20 regions, 170 shops, listed role positions, 96 ATDs, 62 ASMs, and configurable LPG/Inverter/Phone Retail departments.
+- [x] Secure enterprise request intake table with authenticated requester-only insert/read policies and no client-side update/delete path. A request does not create or activate a tenant.
+- [ ] Build and secure the MobiWave-admin review/provisioning operation; validate transitions and write audit events.
+- [ ] Build organisation/unit/department/role/assignment/workflow configuration screens and validated CSV/XLSX import.
+- [ ] Validate migration against the actual Supabase project and existing schema before applying it. The migration has not been applied or remotely tested by this commit.
+
 ## Still required before production
 
 - [ ] Confirm CI is green on the latest commit and perform a real device/emulator smoke test.
 - [ ] Configure SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in the Android build secrets. Do not use a service-role key in the APK.
-- [ ] Provision an initial organisation, employee, role, permission set and assignment through a controlled administrator workflow; the live database currently has no business rows.
+- [ ] Provision Sun King's organisation, employees, roles, permissions and assignments through a controlled administrator workflow; do not fabricate unconfirmed reporting lines.
 - [ ] Replace remaining synthetic dashboard, advances, approvals and organisation figures with authenticated backend queries.
-- [ ] Build employee/org administration UI, role/assignment management, reporting hierarchy and CSV/XLSX import with preview/validation.
 - [ ] Complete the full expense lifecycle: finance acceptance/rejection, correction history, returned-cash recording, period reconciliation and ledger reports.
 - [ ] Add a robust durable offline draft/outbox and idempotent retry/sync flow. Offline submission currently fails closed rather than pretending to save.
 - [ ] Add camera capture, malware scanning and orphaned-storage cleanup. The current evidence workflow uses document selection and file-signature checks; it does not malware-scan files.
@@ -28,11 +36,11 @@
 - [ ] Configure and validate Safaricom Daraja sandbox credentials, callback reachability/authenticity, retry semantics and reconciliation. No payment credentials are present, and no live transfer is enabled.
 - [ ] Confirm direct KRA invoice lookup availability or approve a provider contract; test authoritative positive, negative, partial, timeout and malformed responses before external verification can be enabled.
 - [ ] Add load tests for 1,500–2,000 users, dependency/secret scanning, alerts, backup/restore tests, release signing and rollback.
-- [ ] Approve data residency, retention, dedicated deployment and client security requirements.
+- [ ] Approve data residency, retention, deployment and client security requirements.
 
 ## Release boundary
 
-The connected Supabase schema and Edge Function are deployed, and the branch contains the Android integration code. This is not yet a production release: no authenticated end-to-end test has been run with a provisioned employee account, no provider credentials have been configured, and the remaining dashboard/finance/admin workflows are not complete.
+This branch contains the architecture documentation and an onboarding-request migration proposal. The migration has not been applied or validated against the live Supabase schema, the admin review workflow and configuration UI are not implemented, and this is not a production release. No provider credentials or live money movement are implied.
 
 ## Implementation tracks
 
@@ -40,5 +48,5 @@ The connected Supabase schema and Edge Function are deployed, and the branch con
 2. Authenticated persistence, private evidence storage and offline synchronization.
 3. Finance workflow, correction history, returns and reconciliation ledger.
 4. Trusted eTIMS and Daraja integrations.
-5. Configurable organisation, roles, assignments and imports.
+5. Configurable organisation, roles, assignments, enterprise onboarding and imports.
 6. Automated security, load, recovery and release validation.
