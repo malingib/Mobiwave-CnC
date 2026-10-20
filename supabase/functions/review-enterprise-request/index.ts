@@ -79,6 +79,19 @@ Deno.serve(async (request: Request) => {
     return response(400, { error: "invalid_json_body" });
   }
 
+  if (body.action === "list") {
+    const { data: requests, error: listError } = await adminClient
+      .from("cnc_enterprise_requests")
+      .select("id, legal_name, trading_name, contact_name, contact_email, contact_phone, country_code, estimated_users, locations_summary, department_summary, configuration_requirements, status, reviewer_user_id, review_notes, reviewed_at, provisioned_organisation_id, created_at, updated_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (listError) {
+      return response(500, { error: "enterprise_request_list_failed" });
+    }
+    return response(200, { requests: requests ?? [] });
+  }
+
   const requestId = body.request_id;
   const toStatus = body.to_status;
   const reason = typeof body.reason === "string" ? body.reason.trim() : "";
