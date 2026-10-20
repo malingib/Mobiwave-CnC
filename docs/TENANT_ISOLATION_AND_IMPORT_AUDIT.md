@@ -46,6 +46,8 @@ The Edge Function uses Supabase Auth `getUser(token)` and trusted `app_metadata`
 
 The enterprise request and event tables exist in the connected database. The transition RPC is granted to `service_role` only. The request/event tables currently contain no rows.
 
+A database-level transition smoke test used a temporary request and an existing Auth user ID: the legal `configuration_requested → under_review` transition succeeded and wrote one event; an illegal `under_review → active` transition was rejected without changing the request or adding an event. The temporary request and event were deleted. This tests the database transition RPC, not the Edge Function's real-session authorization boundary.
+
 ## Remaining live-session verification
 
 A real authenticated positive/negative test has not been completed in this environment because no test-user access tokens or staging test identities were available to this audit. Do not use a real customer request or production admin account for destructive status-transition testing.
