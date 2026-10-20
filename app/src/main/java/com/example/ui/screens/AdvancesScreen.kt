@@ -333,7 +333,7 @@ fun ReconciliationView(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Verified by Finance & eTIMS Validated",
+                                    text = "Demo record — not externally verified",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MobiTeal
                                 )
@@ -780,7 +780,7 @@ fun ReconciliationView(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "KRA eTIMS Auto-Audited Reconciliation Ledger",
+                            text = "Local demo reconciliation — not audited",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                             fontSize = 11.sp
@@ -914,7 +914,7 @@ fun OfflineDiagnosticsView(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Last Cloud/eTIMS Handshake:",
+                                    text = "Backend connection status:",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -1180,7 +1180,7 @@ fun OfflineDiagnosticsView(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = "[14:28:02] KRA-eTIMS Gateway Ping: RTT 1820ms (High Latency)",
+                                    text = "Demo status: no external eTIMS gateway configured",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MobiTealFixed,
                                     fontFamily = FontFamily.Monospace,
@@ -1194,7 +1194,7 @@ fun OfflineDiagnosticsView(
                                     fontSize = 10.sp
                                 )
                                 Text(
-                                    text = "[14:28:44] SQLite PRAGMA journal_mode = WAL; Integrity Verified",
+                                    text = "Offline database integrity check not implemented — sample status only",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.White,
                                     fontFamily = FontFamily.Monospace,
