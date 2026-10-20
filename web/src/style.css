@@ -170,3 +170,12 @@ tbody tr.selected-row{background:#f1f6fb;outline:1px solid #d7e4f2}
 tbody tr:focus-visible{outline:2px solid #426a91;outline-offset:-2px}
 @media(max-width:850px){.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.transition-form{grid-template-columns:1fr}.transition-form label:nth-child(n){grid-column:auto}}
 @media(max-width:600px){.detail-grid{grid-template-columns:1fr;padding:16px}.transition-form{padding:16px}}
+
+.permission-picker{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:14px;border:1px solid #dce3eb;border-radius:8px}
+.permission-picker legend{padding:0 6px;color:#344256;font-size:11px;font-weight:700}
+.permission-option{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:9px!important;padding:9px;border:1px solid #e6ebf1;border-radius:7px;background:#fff}
+.permission-option input{width:15px!important;height:15px;margin:2px 0 0;flex:0 0 auto}
+.permission-option span{display:flex;flex-direction:column;gap:4px}
+.permission-option strong{font-size:11px;color:#263448}
+.permission-option small{font-size:10px;font-weight:400;color:#6b7788}
+@media(max-width:600px){.permission-picker{grid-template-columns:1fr}.permission-picker{grid-column:auto}}
