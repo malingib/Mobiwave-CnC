@@ -133,9 +133,13 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
     setBusy(true); setError(''); setNotice('')
     try {
       const numbers = csvRows.map(r => r.employee_number)
-      const { data: existing, error: existingError } = await supabase.from('employees').select('employee_number').in('employee_number', numbers)
-      if (existingError) throw existingError
-      const duplicates = new Set((existing || []).map(r => r.employee_number))
+      const existing = []
+      for (let i = 0; i < numbers.length; i += 100) {
+        const { data, error: existingError } = await supabase.from('employees').select('employee_number').in('employee_number', numbers.slice(i, i + 100))
+        if (existingError) throw existingError
+        existing.push(...(data || []))
+      }
+      const duplicates = new Set(existing.map(r => r.employee_number))
       if (duplicates.size) throw new Error('Import stopped; employee numbers already exist: ' + [...duplicates].slice(0, 10).join(', '))
       const payload = csvRows.map(({ line, ...r }) => ({ organisation_id: organisationId, ...r }))
       const { error: importError } = await supabase.from('employees').insert(payload)
