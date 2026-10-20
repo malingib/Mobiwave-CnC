@@ -8,6 +8,7 @@ enum class VoucherStatus(val label: String) {
 }
 
 enum class EtimsStatus(val label: String) {
+    AWAITING_VERIFICATION("Awaiting Verification"),
     VERIFIED("eTIMS Verified"),
     DATA_EXTRACTED("Data Extracted"),
     NEEDS_REVIEW("Needs Review"),
