@@ -14,33 +14,35 @@
 - [x] Daraja B2C submission/callback foundation that does not treat gateway acceptance as confirmed payment.
 - [x] CI creates a temporary debug signing keystore and runs Android unit tests plus debug APK assembly.
 
-## Added on feature/configurable-organisation-monolith
+## Configurable organisation and onboarding foundation
 
-- [x] Architecture contract for one monolith with tenant-specific, configurable organisation structures, departments, roles, effective-dated assignments and approval workflows.
-- [x] Initial Sun King configuration requirements documented as editable input data: 5 zones, 20 regions, 170 shops, listed role positions, 96 ATDs, 62 ASMs, and configurable LPG/Inverter/Phone Retail departments.
-- [x] Secure enterprise request intake table with authenticated requester-only insert/read policies and no client-side update/delete path. A request does not create or activate a tenant.
-- [ ] Build and secure the MobiWave-admin review/provisioning operation; validate transitions and write audit events.
+- [x] Documented single-monolith, tenant-configurable organisation model and Sun King's initial configuration inputs.
+- [x] Enterprise request intake migration with requester-only insert/read RLS; request submission does not create or activate a tenant.
+- [x] Server-only SQL transition function with legal transition checks, row locking, bounded reason text and append-only request transition events.
+- [x] Edge Function for MobiWave-admin review transitions; validates a Supabase-authenticated user and requires trusted app_metadata admin claim. The service-role key is server-side only.
+- [x] JWT verification enabled for review-enterprise-request in Supabase config.
+- [ ] Validate the migrations and function against the actual project/schema in staging, including the organisation table naming and activation check.
+- [ ] Build the registration/request UI and MobiWave-admin review UI.
 - [ ] Build organisation/unit/department/role/assignment/workflow configuration screens and validated CSV/XLSX import.
-- [ ] Validate migration against the actual Supabase project and existing schema before applying it. The migration has not been applied or remotely tested by this commit.
+- [ ] Provision Sun King's verified organisation and staff data; do not invent unconfirmed reporting lines.
+- [ ] Replace synthetic dashboard values with authenticated tenant-scoped queries and finish the full finance workflow.
 
 ## Still required before production
 
 - [ ] Confirm CI is green on the latest commit and perform a real device/emulator smoke test.
-- [ ] Configure SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in the Android build secrets. Do not use a service-role key in the APK.
-- [ ] Provision Sun King's organisation, employees, roles, permissions and assignments through a controlled administrator workflow; do not fabricate unconfirmed reporting lines.
-- [ ] Replace remaining synthetic dashboard, advances, approvals and organisation figures with authenticated backend queries.
-- [ ] Complete the full expense lifecycle: finance acceptance/rejection, correction history, returned-cash recording, period reconciliation and ledger reports.
-- [ ] Add a robust durable offline draft/outbox and idempotent retry/sync flow. Offline submission currently fails closed rather than pretending to save.
-- [ ] Add camera capture, malware scanning and orphaned-storage cleanup. The current evidence workflow uses document selection and file-signature checks; it does not malware-scan files.
-- [ ] Add automated RLS and hierarchy tests using multiple authenticated users across at least two organisations and multiple roles.
-- [ ] Configure and validate Safaricom Daraja sandbox credentials, callback reachability/authenticity, retry semantics and reconciliation. No payment credentials are present, and no live transfer is enabled.
-- [ ] Confirm direct KRA invoice lookup availability or approve a provider contract; test authoritative positive, negative, partial, timeout and malformed responses before external verification can be enabled.
-- [ ] Add load tests for 1,500–2,000 users, dependency/secret scanning, alerts, backup/restore tests, release signing and rollback.
+- [ ] Configure SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in Android build secrets. Never place a service-role key in the APK.
+- [ ] Automated RLS and hierarchy tests using separate authenticated identities across at least two organisations and multiple roles.
+- [ ] Full expense lifecycle: finance acceptance/rejection, correction history, returned-cash recording, period reconciliation and ledger reports.
+- [ ] Durable offline draft/outbox and idempotent retry/sync; offline submission currently fails closed rather than pretending to save.
+- [ ] Camera capture, malware scanning and orphaned-storage cleanup.
+- [ ] Configure and validate Safaricom Daraja sandbox credentials, callback authenticity, retries and reconciliation. No live transfer is enabled.
+- [ ] Confirm direct KRA invoice lookup availability or approve a provider contract; test authoritative positive, negative, partial, timeout and malformed responses.
+- [ ] Load tests for 1,500–2,000 users, dependency/secret scanning, alerts, backup/restore, release signing and rollback.
 - [ ] Approve data residency, retention, deployment and client security requirements.
 
 ## Release boundary
 
-This branch contains the architecture documentation and an onboarding-request migration proposal. The migration has not been applied or validated against the live Supabase schema, the admin review workflow and configuration UI are not implemented, and this is not a production release. No provider credentials or live money movement are implied.
+The onboarding foundation has not been applied or validated against the live Supabase project. The Edge Function has not been deployed or integration-tested; no authenticated end-to-end tenant provisioning test has been run. The Vercel preview currently fails before build because the linked project specifies a non-existent `web` root directory; the repository is an Android/Supabase project and has no verified web app directory at that path. This is not a production release. No provider credentials or live money movement are implied.
 
 ## Implementation tracks
 
