@@ -99,11 +99,12 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
     } finally { setBusy(false) }
   }
 
-  async function endAssignment(id) {
+  async function endAssignment(id, startsAt) {
     if (!window.confirm('End this assignment now? Its history will be retained.')) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const { error: updateError } = await supabase.from('employee_assignments').update({ status: 'revoked', ends_at: new Date().toISOString() }).eq('id', id)
+      const endAt = new Date(Math.max(Date.now(), new Date(startsAt).getTime() + 1000)).toISOString()
+      const { error: updateError } = await supabase.from('employee_assignments').update({ status: 'revoked', ends_at: endAt }).eq('id', id)
       if (updateError) throw updateError
       setNotice('Assignment ended; its history is retained.')
       await load()
@@ -165,7 +166,7 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
             <label className="check-label"><input type="checkbox" checked={assignment.is_acting} onChange={e => setAssignment(v => ({ ...v, is_acting: e.target.checked }))} />Acting assignment</label>
             <button className="primary" disabled={busy || !organisationId}>Add assignment</button>
           </form> : <p className="empty">Create at least one employee, role and unit before assigning staff. Employee onboarding/import is managed separately.</p>}
-          <div className="table-scroll"><table><thead><tr><th>Employee</th><th>Role</th><th>Unit</th><th>Effective period</th><th>Type / status</th><th>Action</th></tr></thead><tbody>{assignments.map(a => <tr key={a.id}><td>{employeeNames[a.employee_id] || a.employee_id}</td><td>{roleNames[a.role_id] || '—'}</td><td>{unitNames[a.org_unit_id] || '—'}</td><td>{fmtDate(a.starts_at)} – {fmtDate(a.ends_at)}</td><td>{a.is_acting ? 'Acting' : 'Substantive'} · {a.status}</td><td>{a.status === 'active' && <button className="table-action danger-action" onClick={() => endAssignment(a.id)} disabled={busy}>End</button>}</td></tr>)}</tbody></table></div>
+          <div className="table-scroll"><table><thead><tr><th>Employee</th><th>Role</th><th>Unit</th><th>Effective period</th><th>Type / status</th><th>Action</th></tr></thead><tbody>{assignments.map(a => <tr key={a.id}><td>{employeeNames[a.employee_id] || a.employee_id}</td><td>{roleNames[a.role_id] || '—'}</td><td>{unitNames[a.org_unit_id] || '—'}</td><td>{fmtDate(a.starts_at)} – {fmtDate(a.ends_at)}</td><td>{a.is_acting ? 'Acting' : 'Substantive'} · {a.status}</td><td>{a.status === 'active' && <button className="table-action danger-action" onClick={() => endAssignment(a.id, a.starts_at)} disabled={busy}>End</button>}</td></tr>)}</tbody></table></div>
         </>}
         {tab === 'reporting' && <>
           {employeeOptions.length > 1 && units.length ? <form className="admin-create-form transition-form" onSubmit={e => save(e, 'reporting_relationships', { ...line, starts_at: new Date(line.starts_at).toISOString(), ends_at: line.ends_at ? new Date(line.ends_at).toISOString() : null, org_unit_id: line.org_unit_id || null }, () => setLine(v => ({ ...v, ends_at: '' })))}>
