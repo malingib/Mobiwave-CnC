@@ -146,15 +146,22 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
     if (!organisationId || !csvRows.length || csvErrors.length) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const numbers = csvRows.map(r => r.employee_number)
       const existing = []
-      for (let i = 0; i < numbers.length; i += 100) {
-        const { data, error: existingError } = await supabase.from('employees').select('employee_number').in('employee_number', numbers.slice(i, i + 100))
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error: existingError } = await supabase
+          .from('employees')
+          .select('employee_number')
+          .order('employee_number')
+          .range(offset, offset + 999)
         if (existingError) throw existingError
         existing.push(...(data || []))
+        if (!data || data.length < 1000) break
       }
-      const duplicates = new Set(existing.map(r => r.employee_number))
-      if (duplicates.size) throw new Error('Import stopped; employee numbers already exist: ' + [...duplicates].slice(0, 10).join(', '))
+      const existingNumbers = new Set(existing.map(r => String(r.employee_number).trim().toLocaleUpperCase('en')))
+      const duplicates = [...new Set(csvRows
+        .map(r => r.employee_number.trim().toLocaleUpperCase('en'))
+        .filter(number => existingNumbers.has(number)))]
+      if (duplicates.length) throw new Error('Import stopped; employee numbers already exist (case-insensitive): ' + duplicates.slice(0, 10).join(', '))
       const payload = csvRows.map(({ line, ...r }) => ({ organisation_id: organisationId, ...r }))
       const { error: importError } = await supabase.from('employees').insert(payload)
       if (importError) throw importError
