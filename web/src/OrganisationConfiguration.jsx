@@ -33,24 +33,38 @@ function parseCsvLine(line) {
   return cells
 }
 function parseEmployeeCsv(text) {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(line => line.trim())
+  const lines = text.replace(/^\\uFEFF/, '').split(/\\r?\\n/).filter(line => line.trim())
   if (lines.length < 2) throw new Error('CSV needs a header and at least one employee row.')
-  const headers = parseCsvLine(lines[0]).map(x => x.toLowerCase())
+  const headers = parseCsvLine(lines[0]).map(x => x.trim().toLowerCase())
   const required = ['employee_number', 'full_name']
+  const allowed = new Set([...required, 'email', 'phone_e164', 'status'])
+  const errors = []
+  if (new Set(headers).size !== headers.length) throw new Error('CSV contains duplicate column names.')
   const missing = required.filter(x => !headers.includes(x))
   if (missing.length) throw new Error('Missing required CSV columns: ' + missing.join(', '))
-  const rows = lines.slice(1).map((line, i) => {
-    const cells = parseCsvLine(line)
-    const row = Object.fromEntries(headers.map((h, j) => [h, cells[j] || '']))
-    return { line: i + 2, employee_number: row.employee_number.trim(), full_name: row.full_name.trim(), email: row.email.trim() || null, phone_e164: row.phone_e164.trim() || null, status: (row.status || 'active').toLowerCase() }
-  })
-  const errors = []
+  const unsupported = headers.filter(x => !allowed.has(x))
+  if (unsupported.length) throw new Error('Unsupported CSV columns: ' + unsupported.join(', '))
   const seen = new Set()
-  rows.forEach(r => {
-    if (!r.employee_number || !r.full_name) errors.push('Line ' + r.line + ': employee_number and full_name are required.')
-    if (!['active','inactive','suspended'].includes(r.status)) errors.push('Line ' + r.line + ': status must be active, inactive or suspended.')
-    if (seen.has(r.employee_number)) errors.push('Line ' + r.line + ': duplicate employee_number ' + r.employee_number + ' in this file.')
-    seen.add(r.employee_number)
+  const rows = lines.slice(1).map((line, i) => {
+    const lineNumber = i + 2
+    const cells = parseCsvLine(line)
+    if (cells.length !== headers.length) {
+      errors.push('Line ' + lineNumber + ': expected ' + headers.length + ' columns but found ' + cells.length + '.')
+    }
+    const row = Object.fromEntries(headers.map((h, j) => [h, cells[j] ?? '']))
+    const employeeNumber = String(row.employee_number ?? '').trim()
+    const fullName = String(row.full_name ?? '').trim()
+    const emailValue = String(row.email ?? '').trim()
+    const phoneValue = String(row.phone_e164 ?? '').trim()
+    const status = String(row.status ?? 'active').trim().toLowerCase() || 'active'
+    const normalizedNumber = employeeNumber.toLocaleUpperCase('en')
+    if (!employeeNumber || !fullName) errors.push('Line ' + lineNumber + ': employee_number and full_name are required.')
+    if (!['active', 'inactive', 'suspended'].includes(status)) errors.push('Line ' + lineNumber + ': status must be active, inactive or suspended.')
+    if (emailValue && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(emailValue)) errors.push('Line ' + lineNumber + ': email address is invalid.')
+    if (phoneValue && !/^\\+[1-9]\\d{7,14}$/.test(phoneValue)) errors.push('Line ' + lineNumber + ': phone_e164 must use international E.164 format, e.g. +254700000000.')
+    if (seen.has(normalizedNumber)) errors.push('Line ' + lineNumber + ': duplicate employee_number ' + employeeNumber + ' (case-insensitive) in this file.')
+    seen.add(normalizedNumber)
+    return { line: lineNumber, employee_number: employeeNumber, full_name: fullName, email: emailValue || null, phone_e164: phoneValue || null, status }
   })
   return { rows, errors }
 }
@@ -132,15 +146,22 @@ export default function OrganisationConfiguration({ supabase, session, onBack, o
     if (!organisationId || !csvRows.length || csvErrors.length) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const numbers = csvRows.map(r => r.employee_number)
       const existing = []
-      for (let i = 0; i < numbers.length; i += 100) {
-        const { data, error: existingError } = await supabase.from('employees').select('employee_number').in('employee_number', numbers.slice(i, i + 100))
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error: existingError } = await supabase
+          .from('employees')
+          .select('employee_number')
+          .order('employee_number')
+          .range(offset, offset + 999)
         if (existingError) throw existingError
         existing.push(...(data || []))
+        if (!data || data.length < 1000) break
       }
-      const duplicates = new Set(existing.map(r => r.employee_number))
-      if (duplicates.size) throw new Error('Import stopped; employee numbers already exist: ' + [...duplicates].slice(0, 10).join(', '))
+      const existingNumbers = new Set(existing.map(r => String(r.employee_number).trim().toLocaleUpperCase('en')))
+      const duplicates = [...new Set(csvRows
+        .map(r => r.employee_number.trim().toLocaleUpperCase('en'))
+        .filter(number => existingNumbers.has(number)))]
+      if (duplicates.length) throw new Error('Import stopped; employee numbers already exist (case-insensitive): ' + duplicates.slice(0, 10).join(', '))
       const payload = csvRows.map(({ line, ...r }) => ({ organisation_id: organisationId, ...r }))
       const { error: importError } = await supabase.from('employees').insert(payload)
       if (importError) throw importError
