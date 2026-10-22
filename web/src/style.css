@@ -284,3 +284,54 @@ input,select,textarea{max-width:100%}
   html{scroll-behavior:auto}
   .landing *,.app-shell *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+
+/* Landing page redesign: a clear dark hero, bright product preview and stronger content hierarchy */
+.landing{background:#fff;color:#17263a}
+.landing-nav{background:#fff;border-bottom-color:#e5eaf0}
+.landing-hero{background:#101b2d;color:#f6f8fb;padding-top:74px;grid-template-columns:minmax(0,1.02fr) minmax(390px,.98fr);gap:clamp(28px,4vw,64px)}
+.landing-hero-copy{padding-top:6px;padding-bottom:48px}
+.landing-hero .landing-kicker{color:#a8b9c9}
+.landing-hero .landing-kicker>span{background:#56c6a0}
+.landing-hero h1{color:#f8fafc;max-width:630px;font-size:clamp(42px,4.5vw,66px);letter-spacing:-2.9px}
+.landing-hero h1 em{color:#68d6b0}
+.landing-hero .landing-lead{color:#bac7d5;max-width:560px;font-size:15px}
+.landing-hero .landing-text-link{color:#e1e8ef}
+.landing-hero .landing-text-link span{color:#70d7b4}
+.landing-hero .landing-primary{background:#0b9872;box-shadow:none}
+.landing-hero .landing-primary:hover{background:#087f63}
+.landing-hero .trust-check{background:#214b43;color:#8ce2c3}
+.landing-hero .landing-trust{color:#b4c2d0}
+.landing-hero .landing-trust i{background:#617186}
+.landing-hero .hero-bottom-rule{border-color:#344256;color:#9eafc0}
+.landing-preview{min-width:0}
+.preview-window{transform:none;box-shadow:0 24px 70px #0003}
+.preview-note{left:-22px}
+.landing-intro{padding-top:88px;padding-bottom:35px}
+.landing-intro h2 span{color:#0a8968}
+.landing-feature{border-radius:9px;min-height:205px;padding:25px;transition:border-color .18s,transform .18s}
+.landing-feature:hover{border-color:#b7d9cd;transform:translateY(-2px)}
+.feature-number{display:inline-flex;align-items:center;justify-content:center;width:31px;height:31px;border:1px solid #d2e9df;border-radius:50%;background:#f1faf6}
+.landing-feature h3{font-size:18px}
+.landing-feature p{font-size:12px;line-height:1.85}
+.landing-workflow{background:#f3f6f8}
+.workflow-steps article>span{background:#fff;flex-basis:34px;height:34px}
+.landing-security{padding-top:82px;padding-bottom:82px}
+.landing-cta{background:#101b2d;border-radius:10px}
+.landing-cta .landing-primary{background:#0b9872;box-shadow:none}
+.landing-cta .landing-primary:hover{background:#087f63}
+.landing-footer{border-top:1px solid #edf0f3;padding-top:23px}
+@media(max-width:1050px){
+ .landing-hero{grid-template-columns:1fr;padding-top:58px;gap:22px}
+ .landing-hero-copy{padding-bottom:0;max-width:780px}
+ .landing-preview{width:min(100%,650px)}
+}
+@media(max-width:680px){
+ .landing-hero{padding:43px 19px 0}
+ .landing-hero h1{font-size:clamp(38px,10.4vw,47px);letter-spacing:-1.9px}
+ .landing-hero .landing-lead{font-size:13px}
+ .preview-note{left:-3px}
+ .landing-intro{padding-top:58px}
+ .landing-feature{min-height:155px}
+ .landing-cta{background:#101b2d}
+}
