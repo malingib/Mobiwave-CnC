@@ -76,15 +76,31 @@ fun MainContainer(
                         .fillMaxSize()
                         .padding(paddingValues)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Authenticated session", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            TextButton(onClick = { showFinanceOperations = true }) { Text("Finance") }
-                            TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                    if (configuration.screenWidthDp < 380) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text("Authenticated session", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                TextButton(onClick = { showFinanceOperations = true }) { Text("Finance") }
+                                TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                            }
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Authenticated session", style = androidx.compose.material3.MaterialTheme.typography.labelSmall)
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                TextButton(onClick = { showFinanceOperations = true }) { Text("Finance") }
+                                TextButton(onClick = { showManualReviewQueue = true }) { Text("Invoice review") }
+                            }
                         }
                     }
                     Box(modifier = Modifier.fillMaxSize()) {
