@@ -42,7 +42,7 @@
 
 ## Release boundary
 
-The onboarding foundation has not been applied or validated against the live Supabase project. The Edge Function has not been deployed or integration-tested; no authenticated end-to-end tenant provisioning test has been run. The Vercel preview currently fails before build because the linked project specifies a non-existent `web` root directory; the repository is an Android/Supabase project and has no verified web app directory at that path. This is not a production release. No provider credentials or live money movement are implied.
+The React/Vite web application is present in `web/`. On 2026-10-22 the linked Vercel project was corrected to use `web` as its root directory, `npm run build` as its build command, and `dist` as its output directory. A fresh production deployment completed successfully; the landing HTML, JavaScript bundle, stylesheet and favicon were verified to return HTTP 200 at `https://cnc.mobiwave.co.ke/`. This resolves the previous missing-root deployment failure, but it does not make the whole product production-ready. Authenticated end-to-end organisation provisioning, billing/payment workflows, full finance lifecycle, real-device validation and the remaining security/release gates still require testing. No provider credentials or live money movement are implied.
 
 ## Implementation tracks
 
