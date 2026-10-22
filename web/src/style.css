@@ -189,3 +189,98 @@ tbody tr:focus-visible{outline:2px solid #426a91;outline-offset:-2px}
 .import-upload input{max-width:100%;font-size:12px}
 .import-upload span{color:#64748b;font-size:12px}
 @media(max-width:600px){.import-intro{padding:16px}.import-upload{padding:16px}}
+
+
+/* CNC design-system hardening: keyboard focus, touch targets and narrow viewports */
+:root{
+  --cnc-brand:#087f63;
+  --cnc-brand-hover:#066d55;
+  --cnc-ink:#17263a;
+  --cnc-muted:#59677a;
+  --cnc-line:#dce3eb;
+  --cnc-surface:#ffffff;
+  --cnc-canvas:#f5f7fa;
+  --cnc-success:#087f63;
+  --cnc-success-bg:#e3f7ee;
+  --cnc-warning:#8a4b08;
+  --cnc-warning-bg:#fff4d8;
+  --cnc-danger:#b42318;
+  --cnc-danger-bg:#ffebeb;
+  --cnc-info:#245a83;
+  --cnc-info-bg:#eaf3fb;
+  --cnc-radius-control:8px;
+  --cnc-radius-panel:10px;
+  --cnc-space-1:4px;
+  --cnc-space-2:8px;
+  --cnc-space-3:12px;
+  --cnc-space-4:16px;
+  --cnc-space-6:24px;
+  --cnc-focus-ring:3px solid #236b9b;
+}
+:where(button,a,input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{
+  outline:var(--cnc-focus-ring);
+  outline-offset:3px;
+}
+:where(button,a,input,select,textarea){scroll-margin-block:90px}
+button,.table-action,.secondary,.landing-nav-cta,.landing-primary,.primary{min-height:40px}
+input,select,textarea{max-width:100%}
+.landing-nav-cta,.landing-primary{min-height:44px}
+.landing-links a{padding:10px 2px}
+.landing-text-link{display:inline-flex;align-items:center;min-height:44px}
+.status-ok,.pill.good{color:var(--cnc-success)}
+.status-review,.pill.pending{color:var(--cnc-warning)}
+.pill.bad{color:var(--cnc-danger)}
+.notice,.success-notice{align-items:flex-start}
+.notice button,.success-notice button{min-width:44px;min-height:44px;flex:0 0 44px}
+.table-scroll{max-width:100%;overscroll-behavior-x:contain}
+@media(max-width:760px){
+  .sidebar{display:flex;flex-direction:column;gap:8px}
+  .sidebar .brand{padding-bottom:8px}
+  .sidebar .nav{min-height:44px;max-width:100%;white-space:normal}
+  .sidebar .nav-icon{flex:0 0 18px}
+  .sidebar .nav-count{display:inline-flex}
+  .sidebar .nav{flex:0 1 auto}
+  .main-area{min-width:0}
+  .topbar{flex-wrap:wrap;gap:12px}
+  .topbar>div{min-width:0;max-width:100%}
+  .topbar .secondary{white-space:normal}
+  .landing-nav{height:auto;min-height:72px;flex-wrap:wrap;gap:12px;padding-block:12px}
+  .landing-links{order:3;width:100%;justify-content:space-between;gap:12px}
+  .landing-nav-cta{margin-left:auto}
+  .landing-hero{grid-template-columns:minmax(0,1fr);gap:20px;padding-top:38px}
+  .landing-hero-copy{padding-bottom:12px;min-width:0}
+  .landing-preview{min-width:0;width:100%;max-width:100%}
+  .preview-window{min-width:0;max-width:100%}
+  .landing-actions{flex-wrap:wrap;gap:10px}
+  .landing-trust{flex-wrap:wrap;row-gap:8px}
+  .hero-bottom-rule{gap:10px;flex-wrap:wrap}
+  .landing-intro,.landing-features,.landing-workflow,.landing-security{min-width:0}
+  .landing-footer{overflow-wrap:anywhere}
+}
+@media(max-width:420px){
+  .landing-nav{padding-inline:16px}
+  .landing-links a{font-size:12px}
+  .landing-hero{padding-inline:16px}
+  .landing-hero h1{font-size:clamp(32px,9vw,40px);letter-spacing:-1px}
+  .landing-preview{overflow:hidden}
+  .preview-top{gap:7px}
+  .preview-top>span{font-size:8px}
+  .preview-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .preview-table-head,.preview-row{grid-template-columns:minmax(0,1fr) minmax(68px,.7fr) 58px}
+  .preview-row>span{min-width:0}
+  .preview-row>span>span{min-width:0}
+  .preview-row>span>span strong,.preview-row>span>span small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
+  .preview-row>strong{font-size:10px}
+  .preview-row .status-ok,.preview-row .status-review{font-size:8px}
+  .landing-actions .landing-primary{width:100%}
+  .landing-intro,.landing-workflow,.landing-security{padding-inline:16px}
+  .landing-features{padding-inline:16px}
+  .landing-cta{margin-inline:12px}
+  .table-tools,.panel-head,.detail-grid,.transition-form{min-width:0}
+  .record-count{white-space:normal;text-align:right}
+  .notice,.success-notice{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .landing *,.app-shell *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
