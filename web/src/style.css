@@ -534,3 +534,190 @@ body{background:var(--cnc-bg);color:var(--cnc-text)}
 @media(prefers-reduced-motion:reduce){
   .app-shell *, .app-shell *::before, .app-shell *::after{transition:none!important}
 }
+
+
+/* Complete NexLink light treatment: public site, authentication, setup and every workspace module */
+:root{
+  --cnc-bg:#f5f7fb;--cnc-surface:#fff;--cnc-border:#e8ecf3;
+  --cnc-text:#202b3d;--cnc-muted:#8490a3;--cnc-accent:#5865df;
+  --cnc-accent-strong:#4653cb;--cnc-accent-soft:#eef0ff;
+  --cnc-sidebar-width:264px;
+}
+body{background:#f5f7fb;color:#202b3d}
+button,input,select,textarea{font-family:'DM Sans',sans-serif}
+:where(button,a,input,select,textarea):focus-visible{outline:3px solid rgba(88,101,223,.28);outline-offset:2px}
+
+/* Shared authenticated workspace */
+.app-shell{background:#f5f7fb;color:#202b3d}
+.app-shell .main-area{width:auto}
+.app-shell .topbar .eyebrow{color:#929db0}
+.app-shell .topbar .muted{line-height:1.6}
+.app-shell .admin-list{padding:0 22px 18px}
+.app-shell .admin-list-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid #edf0f5}
+.app-shell .admin-list-item>div{min-width:0}
+.app-shell .admin-list-item strong,.app-shell .admin-list-item small{display:block}
+.app-shell .admin-list-item strong{font-size:11px;color:#344156;overflow-wrap:anywhere}
+.app-shell .admin-list-item small{font-size:10px;color:#929daf;margin-top:4px}
+.app-shell .admin-create-panel{overflow:hidden}
+.app-shell .admin-create-form{align-items:end}
+.app-shell .admin-create-form label{color:#657186;font-size:10px;line-height:1.45}
+.app-shell .admin-create-form input,.app-shell .admin-create-form select,.app-shell .admin-create-form textarea,
+.app-shell .invoice-form input,.app-shell .invoice-form select,.app-shell .payment-form input,.app-shell .payment-form select,
+.app-shell .plan-form input,.app-shell .plan-form select,.app-shell .transition-form input,.app-shell .transition-form select,
+.app-shell .transition-form textarea,.app-shell .settings-form input{
+  border:1px solid #e2e7f0;border-radius:7px;background:#fff;color:#344156;
+  min-height:41px;padding:10px 12px;font-size:11px;box-shadow:none
+}
+.app-shell .admin-create-form textarea,.app-shell .transition-form textarea{min-height:90px;line-height:1.55}
+.app-shell .admin-create-form input:focus,.app-shell .admin-create-form select:focus,.app-shell .admin-create-form textarea:focus,
+.app-shell .invoice-form input:focus,.app-shell .payment-form input:focus,.app-shell .plan-form input:focus,
+.app-shell .transition-form input:focus,.app-shell .transition-form select:focus,.app-shell .transition-form textarea:focus,
+.app-shell .settings-form input:focus{border-color:#aeb5ff;box-shadow:0 0 0 3px rgba(88,101,223,.08);outline:0}
+.app-shell .primary{width:auto;min-height:41px;margin-top:0;padding:10px 16px;background:#5865df;color:#fff;border:0;border-radius:7px;font-size:11px;font-weight:700;box-shadow:0 4px 10px rgba(88,101,223,.14)}
+.app-shell .primary:hover{background:#4653cb}
+.app-shell .primary:disabled{opacity:.55;cursor:not-allowed}
+.app-shell .admin-create-form .primary,.app-shell .settings-form .primary{justify-self:start}
+.app-shell .table-action{border:1px solid #e2e6f0;background:#f7f8ff;color:#5865df;border-radius:6px;padding:7px 10px;font-size:10px}
+.app-shell .table-action:hover{background:#eef0ff;border-color:#d5d9ff;color:#4653cb}
+.app-shell .table-action.danger-action,.app-shell .danger-action{color:#c65360!important;background:#fff7f7;border-color:#f2dfe1}
+.app-shell .table-action.danger-action:hover{background:#fff0f1}
+.app-shell .compact-input{border:1px solid #e2e7f0;border-radius:6px;background:#fff;color:#344156;padding:8px 9px;font-size:10px}
+.app-shell .audit-details{background:#f5f6fa;color:#647187;border:1px solid #edf0f5;border-radius:5px;padding:7px}
+.app-shell .detail-grid{background:#fff;border-color:#edf0f5}
+.app-shell .detail-grid .stat-label{margin:0;color:#929daf;font-size:9px;letter-spacing:.55px;text-transform:uppercase}
+.app-shell .permission-picker{background:#fafbfe;border-color:#e8ecf3}
+.app-shell .permission-option{border-color:#e9edf4;background:#fff}
+.app-shell .permission-option:hover{border-color:#cfd4ff;background:#fafaff}
+.app-shell .permission-option input{accent-color:#5865df}
+.app-shell .check-label{display:flex;align-items:center;gap:9px}
+.app-shell .check-label input{accent-color:#5865df}
+.app-shell .import-intro{background:#f8f9fc;border-color:#edf0f5}
+.app-shell .import-upload input{color:#647187}
+.app-shell .settings-form{gap:17px}
+.app-shell .settings-form label{color:#657186;font-size:10px}
+.app-shell .settings-list>div{border-color:#edf0f5}
+.app-shell .settings-list strong{color:#344156;font-size:11px}
+.app-shell .settings-list span,.app-shell .settings-list a{font-size:10px}
+.app-shell .support-banner{background:#f1f2ff;border-color:#dfe2ff;color:#5662b5}
+.app-shell .support-banner strong{color:#4653cb}
+.app-shell .notice{background:#fff8eb;border-color:#f3dfb9;color:#94651b}
+.app-shell .success-notice{background:#effaf4;border-color:#d3efdf;color:#197b54}
+.app-shell .pill.good{background:#e7f7ef;color:#159365}
+.app-shell .pill.pending{background:#fff5df;color:#b27a1c}
+.app-shell .pill.bad{background:#fff0f0;color:#d04d58}
+.app-shell .nav-count{background:#e7eaff;color:#5865df}
+.app-shell .empty a,.app-shell .settings-list a{color:#5865df}
+.app-shell .empty a:hover,.app-shell .settings-list a:hover{color:#4653cb}
+.app-shell .table-footer{background:#fbfcfe;border-top:1px solid #edf0f5;color:#929daf}
+.app-shell .fine-print{color:#929daf;overflow-wrap:anywhere}
+.app-shell .fine-print a{color:#5865df}
+.app-shell .page-grid{align-items:start}
+.app-shell .table-scroll{width:100%}
+.app-shell table{min-width:640px}
+.app-shell .selected-row{background:#f1f2ff}
+.app-shell tbody tr.selected-row{outline-color:#dfe2ff}
+.app-shell .loader{border-color:#e6e9f3;border-top-color:#5865df}
+.app-shell .setup-panel{border:1px solid #e8ecf3;border-radius:12px;box-shadow:0 12px 40px rgba(30,48,82,.06)}
+.app-shell .setup-panel .brand-mark{background:#5865df;color:#fff}
+.app-shell .setup-panel h1{color:#202b3d}
+.app-shell .setup-panel p{color:#6d788b}
+.app-shell .setup-panel code{background:#f0f1ff;color:#4653cb}
+.app-shell .center{background:#f5f7fb;color:#647187}
+.app-shell .auth-shell{background:#f5f7fb;grid-template-columns:minmax(0,1fr) minmax(420px,.9fr)}
+.app-shell .auth-intro{background:#fff;color:#202b3d;padding:clamp(36px,7vw,100px);border-right:1px solid #e8ecf3}
+.app-shell .auth-intro .brand-mark{background:#5865df;color:#fff;box-shadow:0 7px 18px rgba(88,101,223,.18)}
+.app-shell .auth-intro .eyebrow{color:#5865df}
+.app-shell .auth-intro h1{color:#202b3d;letter-spacing:-1.5px}
+.app-shell .intro-copy{color:#748095;line-height:1.85}
+.app-shell .auth-foot{color:#9aa4b3}
+.app-shell .auth-form-wrap{background:#f5f7fb}
+.app-shell .auth-form{background:#fff;border:1px solid #e8ecf3;border-radius:12px;padding:34px;box-shadow:0 10px 35px rgba(30,48,82,.045)}
+.app-shell .auth-form .eyebrow{color:#929db0}
+.app-shell .auth-form h2{color:#202b3d}
+.app-shell .auth-form .muted{color:#8792a4}
+.app-shell .auth-form label{color:#657186;font-size:10px}
+.app-shell .auth-form input{border:1px solid #e2e7f0;border-radius:7px;color:#344156;font-size:12px;min-height:43px}
+.app-shell .auth-form input:focus{border-color:#aeb5ff;box-shadow:0 0 0 3px rgba(88,101,223,.08)}
+.app-shell .auth-form .primary{width:100%;margin-top:23px}
+.app-shell .auth-form .error{background:#fff0f0;color:#bd4d58}
+.app-shell .auth-form .fine-print{color:#929daf}
+.app-shell .auth-form .fine-print a{color:#5865df}
+.app-shell .error{background:#fff0f0;color:#bd4d58}
+
+/* Public landing page: same light product language, not a separate dark theme */
+.landing{background:#f5f7fb;color:#202b3d}
+.landing-nav{height:78px;background:#fff;border-bottom:1px solid #e8ecf3;box-shadow:0 2px 10px rgba(30,48,82,.02)}
+.landing-logo{background:#5865df;border-radius:10px;box-shadow:0 5px 12px rgba(88,101,223,.16)}
+.landing-brand strong{color:#202b3d}
+.landing-brand small{color:#929daf}
+.landing-links a{color:#687489}
+.landing-links a:hover,.landing-text-link:hover{color:#5865df}
+.landing-nav-cta{border:1px solid #e2e7f0;background:#fff;color:#465267;border-radius:7px}
+.landing-nav-cta:hover{border-color:#cbd0ff;color:#5865df;background:#fafaff}
+.landing-nav-cta span,.landing-text-link span{color:#5865df}
+.landing-hero{background:#fff;color:#202b3d;padding-top:76px}
+.landing-hero-copy{padding-bottom:42px}
+.landing-hero .landing-kicker{color:#929db0}
+.landing-hero .landing-kicker>span{background:#5865df}
+.landing-hero h1{color:#202b3d;font-size:clamp(40px,4.4vw,62px);letter-spacing:-2.5px}
+.landing-hero h1 em{color:#5865df}
+.landing-hero .landing-lead{color:#748095}
+.landing-hero .landing-text-link{color:#566276}
+.landing-hero .landing-primary,.landing-cta .landing-primary{background:#5865df;color:#fff;box-shadow:0 4px 10px rgba(88,101,223,.14)}
+.landing-hero .landing-primary:hover,.landing-cta .landing-primary:hover{background:#4653cb}
+.landing-hero .landing-trust{color:#8792a4}
+.landing-hero .landing-trust i{background:#c7ceda}
+.landing-hero .trust-check{background:#e7f7ef;color:#159365}
+.landing-hero .hero-bottom-rule{border-color:#e8ecf3;color:#929daf}
+.landing-preview{padding-top:10px}
+.preview-window{border-color:#e8ecf3;border-radius:10px;box-shadow:0 18px 45px rgba(30,48,82,.08)}
+.preview-top{background:#f8f9fc}
+.preview-live i,.preview-foot i{background:#16a276}
+.preview-note{border-color:#e8ecf3;box-shadow:0 8px 24px rgba(30,48,82,.08)}
+.note-icon{background:#e7eaff;color:#5865df}
+.landing-intro{background:#f5f7fb}
+.landing-intro h2 span{color:#5865df}
+.landing-features{background:#f5f7fb}
+.landing-feature{border-color:#e8ecf3;border-radius:9px;box-shadow:0 2px 8px rgba(30,48,82,.02)}
+.landing-feature:hover{border-color:#cbd0ff;box-shadow:0 8px 22px rgba(30,48,82,.05)}
+.feature-number{color:#5865df;border-color:#dfe2ff;background:#f5f5ff}
+.landing-workflow{background:#eef1f7}
+.workflow-steps article>span{color:#5865df;border-color:#dfe2ff}
+.landing-security{background:#fff}
+.security-symbol{background:#f0f1ff;border-color:#dfe2ff;color:#5865df}
+.security-points b{color:#5865df}
+.landing-cta{background:#202b3d;border-radius:10px}
+.landing-cta .landing-kicker{color:#b5bfd0}
+.landing-cta .landing-text-link{color:#edf0f7}
+.landing-cta .landing-text-link span{color:#bfc5ff}
+.landing-footer{background:#fff;border-top:1px solid #e8ecf3}
+.landing-footer>span{color:#929daf}
+
+/* Responsive treatment for every module and the shared public/auth shells */
+@media(max-width:1100px){
+  .app-shell .auth-shell{grid-template-columns:1fr 1fr}
+  .app-shell .auth-intro{padding:48px}
+}
+@media(max-width:760px){
+  .app-shell .auth-shell{grid-template-columns:1fr}
+  .app-shell .auth-intro{min-height:0;padding:30px 24px;border-right:0;border-bottom:1px solid #e8ecf3}
+  .app-shell .auth-intro .brand-mark{margin-bottom:18px}
+  .app-shell .auth-intro h1{font-size:32px;margin-bottom:12px}
+  .app-shell .intro-copy{font-size:13px;margin:0}
+  .app-shell .auth-foot{margin-top:20px}
+  .app-shell .auth-form-wrap{padding:24px 15px}
+  .app-shell .auth-form{padding:24px 20px}
+  .app-shell .admin-list{padding:0 14px 15px}
+  .app-shell .admin-list-item{align-items:flex-start;flex-wrap:wrap}
+  .app-shell .admin-create-form{align-items:stretch}
+  .app-shell .admin-create-form .primary{width:100%}
+  .app-shell .settings-form .primary{width:100%}
+  .app-shell .table-scroll{overflow-x:auto}
+  .landing-hero{padding-top:46px}
+}
+@media(max-width:480px){
+  .app-shell .auth-intro{padding:24px 18px}
+  .app-shell .auth-form{padding:21px 16px}
+  .app-shell .admin-list-item .pill{white-space:nowrap}
+  .landing-hero h1{font-size:clamp(34px,9vw,43px)}
+}
