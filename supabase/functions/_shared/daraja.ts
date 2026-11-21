@@ -6,3 +6,12 @@ export function normalizeDarajaPartyB(phoneE164: string): string {
   }
   return normalized;
 }
+
+/** A 4xx with a provider error code is a definitive rejection; 5xx is ambiguous. */
+export function isDefinitiveDarajaRejection(httpStatus: number, errorCode: unknown): boolean {
+  return Number.isInteger(httpStatus) &&
+    httpStatus >= 400 &&
+    httpStatus < 500 &&
+    typeof errorCode === "string" &&
+    errorCode.trim().length > 0;
+}
