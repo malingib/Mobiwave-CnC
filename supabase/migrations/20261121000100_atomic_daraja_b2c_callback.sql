@@ -299,3 +299,77 @@ revoke all on function public.record_daraja_b2c_submission_result(uuid, text, te
   from public, anon, authenticated;
 grant execute on function public.record_daraja_b2c_submission_result(uuid, text, text, text, text, text, uuid)
   to service_role;
+
+
+-- OAuth preflight failure happens before any B2C request. Restore the approved
+-- batch only when no callback reference was persisted and no item was sent.
+create or replace function public.restore_daraja_batch_after_auth_failure(
+  p_batch_id uuid,
+  p_actor_user_id uuid
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_batch public.disbursement_batches%rowtype;
+  v_item_count integer;
+begin
+  if auth.uid() is not null then
+    raise exception 'preflight recovery RPC is restricted to server-side service-role requests' using errcode = '42501';
+  end if;
+  if p_batch_id is null or p_actor_user_id is null then
+    raise exception 'batch and actor are required' using errcode = '22023';
+  end if;
+
+  select * into v_batch
+  from public.disbursement_batches
+  where id = p_batch_id
+  for update;
+  if not found then
+    raise exception 'disbursement batch not found' using errcode = 'P0002';
+  end if;
+
+  if v_batch.status <> 'outcome_unconfirmed'
+     or exists (
+       select 1 from public.disbursement_items
+       where batch_id = p_batch_id
+         and (status <> 'outcome_unconfirmed' or originator_conversation_id is not null)
+     ) then
+    return jsonb_build_object('restored', false, 'batch_status', v_batch.status);
+  end if;
+
+  select count(*) into v_item_count
+  from public.disbursement_items
+  where batch_id = p_batch_id;
+  if v_item_count = 0 then
+    raise exception 'disbursement batch has no items' using errcode = '22023';
+  end if;
+
+  update public.disbursement_items
+  set status = 'approved', updated_at = now()
+  where batch_id = p_batch_id and status = 'outcome_unconfirmed';
+
+  update public.disbursement_batches
+  set status = 'approved',
+      result_summary = jsonb_build_object('preflight', 'daraja_oauth_failed', 'b2c_request_sent', false),
+      updated_at = now()
+  where id = p_batch_id;
+
+  insert into public.audit_events (
+    organisation_id, actor_user_id, action, entity_type, entity_id, after_data
+  ) values (
+    v_batch.organisation_id, p_actor_user_id,
+    'disbursement_batch.preflight_failed', 'disbursement_batch', p_batch_id::text,
+    jsonb_build_object('status', 'approved', 'b2c_request_sent', false, 'item_count', v_item_count)
+  );
+
+  return jsonb_build_object('restored', true, 'batch_status', 'approved');
+end;
+$$;
+
+revoke all on function public.restore_daraja_batch_after_auth_failure(uuid, uuid)
+  from public, anon, authenticated;
+grant execute on function public.restore_daraja_batch_after_auth_failure(uuid, uuid)
+  to service_role;
