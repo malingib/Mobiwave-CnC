@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizeDarajaPartyB } from "../_shared/daraja.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("APP_ORIGIN") ?? "null",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           OriginatorConversationID: originatorId, InitiatorName: initiator, SecurityCredential: securityCredential,
           CommandID: "BusinessPayment", Amount: Math.round(Number(item.amount)), PartyA: shortcode,
-          PartyB: item.phone_e164.replace(/^\\+/, ""), Remarks: item.purpose.slice(0, 100),
+          PartyB: normalizeDarajaPartyB(item.phone_e164), Remarks: item.purpose.slice(0, 100),
           QueueTimeOutURL: timeoutUrl, ResultURL: resultUrl, Occasion: "MW-" + body.batch_id.slice(0, 8),
         }),
         signal: AbortSignal.timeout(15000),
