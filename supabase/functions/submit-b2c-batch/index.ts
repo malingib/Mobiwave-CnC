@@ -107,12 +107,23 @@ Deno.serve(async (req) => {
     if (typeof tokenBody.access_token !== "string") throw new Error("Missing token");
     token = tokenBody.access_token;
   } catch {
-    // No B2C payment request was issued. Keep the batch locked for reconciliation;
-    // do not claim success or automatically restore an approved batch.
+    // OAuth is only a preflight call: no B2C payment request has been issued.
+    // Restore approval transactionally, but only if no callback reference exists.
+    const { data: restored, error: restoreError } = await admin.rpc(
+      "restore_daraja_batch_after_auth_failure",
+      { p_batch_id: body.batch_id, p_actor_user_id: userData.user.id },
+    );
+    if (restoreError || restored?.restored !== true) {
+      return json({
+        error: "preflight_recovery_failed",
+        status: restored?.batch_status ?? "outcome_unconfirmed",
+        message: "Daraja OAuth failed before any payment request. The batch state could not be safely restored; inspect and reconcile it before retry.",
+      }, 502);
+    }
     return json({
-      status: "outcome_unconfirmed",
-      message: "Daraja authentication failed before submission; reconcile the batch before retry.",
-    }, 502);
+      status: "approved",
+      message: "Daraja OAuth preflight failed. No payment request was sent; the batch is safely returned to approved for a later retry.",
+    }, 503);
   }
 
   const outcomes: Array<{ item_id: string; status: string; message: string }> = [];
