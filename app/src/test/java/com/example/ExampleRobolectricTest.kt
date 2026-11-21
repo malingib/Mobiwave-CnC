@@ -25,7 +25,8 @@ class ExampleRobolectricTest {
     @Test
     fun `repository initial data test`() {
         val repo = MobiWaveRepository()
-        assertEquals("David Kiprop", repo.managerName)
+        assertTrue(repo.isDemoDataEnabled)
+        assertTrue(repo.managerName.startsWith("DEMO"))
         assertTrue(repo.expenses.value.isNotEmpty())
         assertTrue(repo.batchRecipients.value.isNotEmpty())
 

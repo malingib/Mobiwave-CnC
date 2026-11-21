@@ -111,11 +111,11 @@ fun HomeScreen(
                             }
                         }
 
-                        // Online Sync active pill
+                        // Do not claim background sync until the durable outbox is implemented
                         Row(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(MobiTealContainer.copy(alpha = 0.4f))
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -124,12 +124,12 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(MobiTeal)
+                                    .background(MaterialTheme.colorScheme.onSurfaceVariant)
                             )
                             Text(
-                                text = "Online (Sync auto-active)",
+                                text = "Server sync not configured",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF005049),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )

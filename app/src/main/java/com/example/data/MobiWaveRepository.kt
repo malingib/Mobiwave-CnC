@@ -1,5 +1,7 @@
 package com.example.data
 
+import com.example.BuildConfig
+
 import com.example.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,37 +15,38 @@ import java.util.UUID
 class MobiWaveRepository {
 
     // Store profile & financial allocations
-    val managerName = "David Kiprop"
-    val employeeId = "#EMP-2041"
-    val managerRole = "Shop Manager (Permanent) & Acting ATD"
-    val shopName = "Tumaini Shop #042 (Nairobi East)"
+    val isDemoDataEnabled = BuildConfig.DEBUG
+    val managerName = if (BuildConfig.DEBUG) "DEMO — David Kiprop" else "Profile not loaded"
+    val employeeId = if (BuildConfig.DEBUG) "#EMP-2041 (DEMO)" else "—"
+    val managerRole = if (BuildConfig.DEBUG) "DEMO — Shop Manager & Acting ATD" else "No active assignment loaded"
+    val shopName = if (BuildConfig.DEBUG) "DEMO — Tumaini Shop #042 (Nairobi East)" else "No shop assignment loaded"
     val kraPin = "DEMO ONLY — configure via secured organisation profile"
-    val avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDz6a-BRpBuaOXCqLQaa3Ec7_oh5Lf3lW2DYdPxgBWXvHZf2tgfT0C28dwgndYjUUGl635YqqOyy1lXc6TZWP5RLygUptPtNPRThSft_npZ03DHc11pVKt6YTE15Gt2F8ZRuAyhCmywgb6i6AgV8fIu-P5kTYV-yuPcS_ynj2yl2Oe2c8-SgmJXHEzsUZOrA8QWLIo7vbqDN2C0qm5wfZ_k5uRhs9LuIY8odp-PcZFn36GiYz5PWkro"
+    val avatarUrl = if (BuildConfig.DEBUG) "https://lh3.googleusercontent.com/aida-public/AB6AXuDz6a-BRpBuaOXCqLQaa3Ec7_oh5Lf3lW2DYdPxgBWXvHZf2tgfT0C28dwgndYjUUGl635YqqOyy1lXc6TZWP5RLygUptPtNPRThSft_npZ03DHc11pVKt6YTE15Gt2F8ZRuAyhCmywgb6i6AgV8fIu-P5kTYV-yuPcS_ynj2yl2Oe2c8-SgmJXHEzsUZOrA8QWLIo7vbqDN2C0qm5wfZ_k5uRhs9LuIY8odp-PcZFn36GiYz5PWkro" else ""
 
-    val allocationLimit = 45000.0
-    val totalDisbursed = 25000.0
-    val accountedFor = 19800.0
-    val toAccountFor = 5200.0
-    val headroomRemaining = 18200.0
+    val allocationLimit = if (BuildConfig.DEBUG) 45000.0 else 0.0
+    val totalDisbursed = if (BuildConfig.DEBUG) 25000.0 else 0.0
+    val accountedFor = if (BuildConfig.DEBUG) 19800.0 else 0.0
+    val toAccountFor = if (BuildConfig.DEBUG) 5200.0 else 0.0
+    val headroomRemaining = if (BuildConfig.DEBUG) 18200.0 else 0.0
 
     // Expenses State
-    private val _expenses = MutableStateFlow<List<ExpenseVoucher>>(initialExpenses())
+    private val _expenses = MutableStateFlow<List<ExpenseVoucher>>(if (BuildConfig.DEBUG) initialExpenses() else emptyList())
     val expenses: StateFlow<List<ExpenseVoucher>> = _expenses.asStateFlow()
 
     // Advances History
-    private val _advances = MutableStateFlow<List<CashAdvance>>(initialAdvances())
+    private val _advances = MutableStateFlow<List<CashAdvance>>(if (BuildConfig.DEBUG) initialAdvances() else emptyList())
     val advances: StateFlow<List<CashAdvance>> = _advances.asStateFlow()
 
     // Offline Queue items
-    private val _offlineQueue = MutableStateFlow<List<OfflineSyncItem>>(initialOfflineQueue())
+    private val _offlineQueue = MutableStateFlow<List<OfflineSyncItem>>(if (BuildConfig.DEBUG) initialOfflineQueue() else emptyList())
     val offlineQueue: StateFlow<List<OfflineSyncItem>> = _offlineQueue.asStateFlow()
 
     // Operations Approvals
-    private val _pendingApprovals = MutableStateFlow<List<PendingApprovalItem>>(initialApprovals())
+    private val _pendingApprovals = MutableStateFlow<List<PendingApprovalItem>>(if (BuildConfig.DEBUG) initialApprovals() else emptyList())
     val pendingApprovals: StateFlow<List<PendingApprovalItem>> = _pendingApprovals.asStateFlow()
 
     // Enterprise Batch Recipient Items for Dual-Approval Queue
-    private val _batchRecipients = MutableStateFlow<List<BatchRecipientItem>>(initialBatchRecipients())
+    private val _batchRecipients = MutableStateFlow<List<BatchRecipientItem>>(if (BuildConfig.DEBUG) initialBatchRecipients() else emptyList())
     val batchRecipients: StateFlow<List<BatchRecipientItem>> = _batchRecipients.asStateFlow()
 
     // System Telemetry
@@ -451,11 +454,11 @@ class MobiWaveRepository {
         )
     )
 
-    val zoneMetrics: List<ZoneMetric> = listOf(
+    val zoneMetrics: List<ZoneMetric> = if (BuildConfig.DEBUG) listOf(
         ZoneMetric("Nairobi Central", 45, 12400000.0, 15000000.0, 96, 2600000.0),
         ZoneMetric("Rift Valley", 38, 8200000.0, 11000000.0, 93, 2800000.0),
         ZoneMetric("Coast Hub", 28, 6100000.0, 8500000.0, 95, 2400000.0),
         ZoneMetric("Western & Nyanza", 34, 5800000.0, 8000000.0, 91, 2200000.0),
         ZoneMetric("Mount Kenya", 25, 4300000.0, 6000000.0, 97, 1700000.0, isLeadPerformer = true)
-    )
+    ) else emptyList()
 }

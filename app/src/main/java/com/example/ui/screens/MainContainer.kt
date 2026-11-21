@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.material3.Text
@@ -157,6 +158,20 @@ fun MainContainer(
 
         if (showStkPushModal) {
             StkPushModal(viewModel = viewModel)
+        }
+
+        if (viewModel.isDemoDataEnabled) {
+            Text(
+                text = "DEMO DATA — illustrative only; no live operational records",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 6.dp)
+                    .background(androidx.compose.material3.MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onErrorContainer
+            )
         }
 
         // Animated Toast Overlay
