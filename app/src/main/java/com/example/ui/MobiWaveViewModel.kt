@@ -34,6 +34,8 @@ data class UiNotification(
 class MobiWaveViewModel(
     private val repository: MobiWaveRepository = MobiWaveRepository()
 ) : ViewModel() {
+    val isDemoDataEnabled: Boolean = repository.isDemoDataEnabled
+
 
     private val liveExpenseRepository = SupabaseExpenseRepository()
     private var authenticatedAccessToken: String? = null
