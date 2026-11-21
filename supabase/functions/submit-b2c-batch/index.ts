@@ -193,7 +193,14 @@ Deno.serve(async (req) => {
         resultDescription = typeof responseBody.ResponseDescription === "string"
           ? responseBody.ResponseDescription
           : "Accepted by gateway; awaiting callback confirmation.";
-      } else if (!response.ok && typeof responseBody.errorCode === "string") {
+      } else if (
+        response.status >= 400 &&
+        response.status < 500 &&
+        typeof responseBody.errorCode === "string"
+      ) {
+        // A definitive client-side rejection means this request was not accepted.
+        // 5xx responses remain ambiguous: Daraja may have processed the request
+        // before the gateway failed to return a usable response.
         nextStatus = "failed";
         resultCode = responseBody.errorCode;
         resultDescription = String(responseBody.errorMessage ?? "Daraja rejected the request.");
