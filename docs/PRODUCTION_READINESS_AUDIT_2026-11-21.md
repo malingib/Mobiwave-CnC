@@ -11,6 +11,8 @@ The repository has a working Android/web build foundation and a substantial expe
 
 ## Changes completed during this audit
 
+- PR #17 merged after both Android CI workflows passed. Release builds now start with empty demo collections and do not expose the hardcoded sample profile/financial metrics; debug builds retain labelled demo fixtures. Merge: `56eac0cb`.
+
 - PR #14 merged: approved the Sun King retail operations foundation and single-organisation scope.
 - PR #16 merged: removed the active multi-customer admin dashboard and enterprise admission UI from the web application. Platform-admin accounts now enter the provisioned workspace rather than the obsolete cross-customer console. Web build and Android CI passed.
 - PR #17 opened: gates synthetic Android sample data to debug builds, adds a persistent demo warning, and removes the inaccurate "Online (Sync auto-active)" status. Android CI is still pending at the time of this audit.
@@ -27,7 +29,7 @@ The repository has a working Android/web build foundation and a substantial expe
 
 ### Supabase deployed Edge Functions
 
-The connected project `uzfsbjfkmicorrchulfs` reports these active deployed functions:
+The connected project `uzfsbjfkmicorrchulfs` reports these active deployed functions. The Supabase control plane reports `ACTIVE_HEALTHY`, but the database connection itself continues to time out; a restore request reported that the project was already active and may still be waking. A simple `SELECT now()` also timed out. Do not consider database restoration complete until SQL, migrations and advisors respond successfully.
 
 | Function | Live version | Source status |
 |---|---:|---|
@@ -35,17 +37,17 @@ The connected project `uzfsbjfkmicorrchulfs` reports these active deployed funct
 | `cnc-admin-console` | 6 | **Not tracked in current repository** |
 | `review-enterprise-request` | 3 | Tracked in repository |
 
-The repository contains `daraja-callback` and `submit-b2c-batch`, but they were not present in the deployed function listing returned during this audit. Do not assume live B2C capability from source files alone.
+The repository contains `daraja-callback` and `submit-b2c-batch`, but they were not present in the deployed function listing returned during this audit. Do not assume live B2C capability from source files alone. The deployed `verify-invoice` function version 4 correctly fails closed: it explicitly states that no authorised KRA supplier-invoice lookup contract has been confirmed, marks the expense for manual review, and never claims an external verification occurred.
 
-The active, untracked `cnc-admin-console` function contains actions for listing and creating client organisations, creating demo organisations, changing organisation status, managing plans/subscriptions/invoices/payments, and reading billing audit logs. This conflicts with the approved single-organisation rollout and is deployment/source drift that must be resolved.
+The active, untracked `cnc-admin-console` function source was retrieved and reviewed. It authenticates users with `auth.getUser(token)` and checks trusted `app_metadata` for `super_admin`, then creates a Supabase service-role client. It contains actions for listing/inviting super-admins, listing and creating client organisations, creating demo organisations, viewing client expenses, changing organisation status, managing plans/subscriptions/invoices/payments, confirming payments through `cnc_confirm_payment`, and reading billing audit logs. This conflicts with the approved single-organisation Sun King rollout and is deployment/source drift that must be resolved. The function also sets `Access-Control-Allow-Origin: *`; while it checks a trusted admin claim, the broad origin policy should be replaced with a controlled allowlist during the staged remediation.
 
-**Critical integrity issue:** the function's `create_demo_client` action inserts an illustrative expense with `verification_status = externally_verified`. That is not an authoritative provider result and conflicts with the fail-closed eTIMS contract. Although the action is restricted to trusted super-admin claims, it must not be used or exposed as a production workflow.
+**Critical integrity issue:** the function's `create_demo_client` action inserts an illustrative expense with `verification_status = externally_verified`. That is not an authoritative provider result and conflicts with the fail-closed eTIMS contract. Although the action is restricted to trusted super-admin claims, it must not be used or exposed as a production workflow. Its audit helper only logs audit-write failures to the function console and continues, so a successful privileged mutation can be returned even when its audit record was not persisted. This is another release blocker for privileged operations.
 
 Do not delete or replace the deployed function until its callers, database objects, audit dependencies and rollback path are understood. First capture and review the deployed source, then stage a restricted replacement and decommission obsolete actions deliberately.
 
 ### Live database inspection limitation
 
-The Supabase project listing returned the project as active/healthy, but SQL-backed inspection returned a hibernated-project response followed by a database connection timeout. Migration history, live table grants, RLS policies and security/performance advisors therefore could not be verified in this pass. No SQL or production database changes were made.
+The Supabase control plane currently reports `ACTIVE_HEALTHY`, and the explicit restore call reports that the project is no longer paused and may take time to fully restore. Nevertheless, repeated SQL-backed inspection, migration listing, table listing and advisor calls still fail with connection timeouts or hibernation responses. A minimal read-only `SELECT now()` also timed out. Migration history, live table grants, RLS policies and security/performance advisors therefore remain unverified. No SQL or production database changes were made.
 
 ### Open PR #11 — do not merge blindly
 
