@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
           CommandID: "BusinessPayment",
           Amount: Math.round(Number(item.amount)),
           PartyA: shortcode,
-          PartyB,
+          PartyB: partyB,
           Remarks: item.purpose.slice(0, 100),
           QueueTimeOutURL: timeoutUrl,
           ResultURL: resultUrl,
