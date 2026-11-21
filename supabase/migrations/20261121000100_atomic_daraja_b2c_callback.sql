@@ -9,7 +9,7 @@ create or replace function public.record_daraja_b2c_callback(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   v_item public.disbursement_items%rowtype;
@@ -21,8 +21,8 @@ declare
   v_now timestamptz := now();
   v_repaired boolean := false;
 begin
-  if auth.role() is distinct from 'service_role' then
-    raise exception 'service role required' using errcode = '42501';
+  if auth.uid() is not null then
+    raise exception 'callback RPC is restricted to server-side service-role requests' using errcode = '42501';
   end if;
 
   if nullif(btrim(p_originator_conversation_id), '') is null
