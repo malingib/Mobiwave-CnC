@@ -33,3 +33,23 @@ Deno.test("rejects malformed and non-Kenyan numbers", () => {
   assertThrows(() => normalizeDarajaPartyB("+25471234567"), "E.164 format");
   assertThrows(() => normalizeDarajaPartyB("+254912345678"), "E.164 format");
 });
+
+import { isDefinitiveDarajaRejection } from "./daraja.ts";
+
+Deno.test("treats a coded 4xx response as a definitive rejection", () => {
+  if (!isDefinitiveDarajaRejection(400, "400.001.02")) {
+    throw new Error("Expected a coded 4xx response to be definitive.");
+  }
+});
+Deno.test("keeps 5xx provider errors ambiguous", () => {
+  for (const status of [500, 502, 503, 504]) {
+    if (isDefinitiveDarajaRejection(status, "500.001.100")) {
+      throw new Error(`Expected HTTP ${status} to remain ambiguous.`);
+    }
+  }
+});
+Deno.test("does not treat missing or malformed provider error codes as definitive", () => {
+  if (isDefinitiveDarajaRejection(400, null) || isDefinitiveDarajaRejection(400, "  ")) {
+    throw new Error("Expected missing error codes to remain ambiguous.");
+  }
+});
