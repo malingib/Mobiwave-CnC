@@ -207,6 +207,7 @@ begin
     raise exception 'submission result RPC is restricted to server-side service-role requests' using errcode = '42501';
   end if;
   if p_item_id is null or p_actor_user_id is null
+     or p_status is null
      or p_status not in ('submitted', 'failed', 'outcome_unconfirmed')
      or nullif(btrim(p_originator_conversation_id), '') is null then
     raise exception 'invalid submission result arguments' using errcode = '22023';
