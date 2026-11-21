@@ -323,6 +323,18 @@ begin
     raise exception 'batch and actor are required' using errcode = '22023';
   end if;
 
+  -- Keep the same item-then-batch lock order as callback and submission
+  -- result processing to avoid a batch/item deadlock during recovery.
+  perform i.id
+  from public.disbursement_items i
+  where i.batch_id = p_batch_id
+  order by i.id
+  for update;
+
+  select count(*) into v_item_count
+  from public.disbursement_items
+  where batch_id = p_batch_id;
+
   select * into v_batch
   from public.disbursement_batches
   where id = p_batch_id
@@ -339,10 +351,6 @@ begin
      ) then
     return jsonb_build_object('restored', false, 'batch_status', v_batch.status);
   end if;
-
-  select count(*) into v_item_count
-  from public.disbursement_items
-  where batch_id = p_batch_id;
   if v_item_count = 0 then
     raise exception 'disbursement batch has no items' using errcode = '22023';
   end if;
